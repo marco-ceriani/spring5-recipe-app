@@ -3,6 +3,7 @@ package guru.springframework.domain;
 import javax.persistence.*;
 import java.math.BigDecimal;
 
+@Entity
 public class Ingredient {
 
     @Id
