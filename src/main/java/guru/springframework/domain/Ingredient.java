@@ -13,7 +13,7 @@ public class Ingredient {
     private String description;
     private BigDecimal amount;
 
-    @OneToOne(mappedBy = "uom")
+    @OneToOne(fetch = FetchType.EAGER)
     private UnitOfMeasure unitOfMeasure;
 
     @ManyToOne
