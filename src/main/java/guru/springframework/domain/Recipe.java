@@ -18,7 +18,10 @@ public class Recipe {
     private Integer servings;
     private String source;
     private String url;
-    // private Difficulty difficulty;
+    private String directions;
+
+    @Enumerated(value = EnumType.STRING)
+    private Difficulty difficulty;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "recipe")
     private Set<Ingredient> ingredients = new HashSet<>();
@@ -85,6 +88,22 @@ public class Recipe {
         this.url = url;
     }
 
+    public String getDirections() {
+        return directions;
+    }
+
+    public void setDirections(String directions) {
+        this.directions = directions;
+    }
+
+    public Difficulty getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(Difficulty difficulty) {
+        this.difficulty = difficulty;
+    }
+
     public Byte[] getImage() {
         return image;
     }
@@ -92,6 +111,7 @@ public class Recipe {
     public void setImage(Byte[] image) {
         this.image = image;
     }
+
 
     public Notes getNotes() {
         return notes;
