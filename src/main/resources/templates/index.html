@@ -3,8 +3,39 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Recipe Home</title>
+    <style>
+        body {
+            background: #f0f0e8;
+        }
+        h1 {
+            text-align: center;
+        }
+        .recipes-list {
+            min-width: 70rem;
+            margin: 0.5rem auto;
+            background: white;
+            padding: 1rem 0.6rem;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
 <h1>My Recipes!</h1>
+
+<div>
+    <table class="recipes-list">
+        <tr>
+            <th>ID</th>
+            <th>Description</th>
+            <th>Difficulty</th>
+        </tr>
+        <tr th:each="recipe : ${recipes}">
+            <td th:text="${recipe.id}">123</td>
+            <td th:text="${recipe.description}">Tasty Goodnees</td>
+            <td th:text="${recipe.difficulty}">EASY</td>
+        </tr>
+    </table>
+</div>
+
 </body>
 </html>
