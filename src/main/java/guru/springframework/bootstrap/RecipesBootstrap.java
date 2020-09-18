@@ -4,10 +4,12 @@ import guru.springframework.domain.*;
 import guru.springframework.repositories.CategoryRepository;
 import guru.springframework.repositories.RecipeRepository;
 import guru.springframework.repositories.UnitOfMeasureRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,6 +18,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 @Component
+@Slf4j
 public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEvent> {
 
     private final RecipeRepository recipeRepository;
@@ -30,7 +33,9 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
 
 
     @Override
+    @Transactional
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
+        log.info("Loading boostrap data");
         List<Recipe> recipes = getRecipes();
         recipeRepository.saveAll(recipes);
     }
@@ -43,6 +48,7 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
     }
 
     private Recipe insertGuacamoleRecipe() {
+        log.debug("creating recipe for perfect guacamole");
         Recipe recipe = new Recipe();
         recipe.setDescription("Perfect guacamole");
         recipe.setPrepTime(10);
@@ -98,6 +104,7 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
     }
 
     private Recipe createRecipeTacos() {
+        log.debug("creating recipe for spicy tacos");
         Recipe recipe = new Recipe();
         recipe.setDescription("Spicy Grilled Chicken Taco");
         recipe.setPrepTime(20);
@@ -157,7 +164,6 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
         recipe.addIngredient(new Ingredient("cup sour cream thinned with 1/4 cup milk", new BigDecimal(4), cupsUom));
         recipe.addIngredient(new Ingredient("lime, cut into wedges", new BigDecimal(4), null));
 
-        recipeRepository.save(recipe);
         return recipe;
     }
 
