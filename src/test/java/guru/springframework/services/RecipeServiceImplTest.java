@@ -8,9 +8,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
 public class RecipeServiceImplTest {
@@ -28,7 +30,21 @@ public class RecipeServiceImplTest {
     }
 
     @Test
-    public void name() {
+    public void getRecipeByIdTest() throws Exception {
+        Recipe recipe = new Recipe();
+        recipe.setId(1l);
+
+        when(recipeRepository.findById(1L)).thenReturn(Optional.of(recipe));
+
+        Recipe recipeReturned = recipeService.findById(1L);
+
+        assertNotNull(recipeReturned);
+        verify(recipeRepository).findById(1L);
+        verify(recipeRepository, never()).findAll();
+    }
+
+    @Test
+    public void getRecipesTest() {
         Set recipesData = new HashSet();
         recipesData.add(new Recipe());
         when(recipeRepository.findAll()).thenReturn(recipesData);
