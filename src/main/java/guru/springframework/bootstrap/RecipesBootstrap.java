@@ -84,8 +84,10 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
                 unitOfMeasureRepository.findByDescription("Teaspoon").orElseThrow(uomExceptionSupplier);
         UnitOfMeasure dashUom =
                 unitOfMeasureRepository.findByDescription("Dash").orElseThrow(uomExceptionSupplier);
+        UnitOfMeasure numberUom =
+                unitOfMeasureRepository.findByDescription("").orElseThrow(uomExceptionSupplier);
 
-        recipe.addIngredient(new Ingredient("ripe avocado", BigDecimal.valueOf(2), null));
+        recipe.addIngredient(new Ingredient("ripe avocado", BigDecimal.valueOf(2), numberUom));
         recipe.addIngredient(new Ingredient("salt", BigDecimal.valueOf(0.25), teaspoonUom));
         recipe.addIngredient(new Ingredient("salt", BigDecimal.valueOf(0.25), teaspoonUom));
 
@@ -94,11 +96,11 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
         recipe.addIngredient(new Ingredient("minced red onion or thinly sliced green onion", new BigDecimal(2),
                 tablespoonUom));
         recipe.addIngredient(new Ingredient("serrano chiles, stems and seeds removed, minced", new BigDecimal(2),
-                null));
+                numberUom));
         recipe.addIngredient(new Ingredient("Cilantro", new BigDecimal(2), tablespoonUom));
         recipe.addIngredient(new Ingredient("freshly grated black pepper", new BigDecimal(2), dashUom));
         recipe.addIngredient(new Ingredient("ripe tomato, seeds and pulp removed, chopped", new BigDecimal(".5"),
-                null));
+                numberUom));
 
         return recipe;
     }
@@ -143,26 +145,28 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
                 unitOfMeasureRepository.findByDescription("Cup").orElseThrow(uomExceptionSupplier);
         UnitOfMeasure pintUom =
                 unitOfMeasureRepository.findByDescription("Pint").orElseThrow(uomExceptionSupplier);
+        UnitOfMeasure numberUom =
+                unitOfMeasureRepository.findByDescription("").orElseThrow(uomExceptionSupplier);
 
         recipe.addIngredient(new Ingredient("Ancho Chili Powder", new BigDecimal(2), tablespoonUom));
         recipe.addIngredient(new Ingredient("Dried Oregano", new BigDecimal(1), teaspoonUom));
         recipe.addIngredient(new Ingredient("Dried Cumin", new BigDecimal(1), teaspoonUom));
         recipe.addIngredient(new Ingredient("Sugar", new BigDecimal(1), teaspoonUom));
         recipe.addIngredient(new Ingredient("Salt", new BigDecimal(".5"), teaspoonUom));
-        recipe.addIngredient(new Ingredient("Clove of Garlic, Choppedr", new BigDecimal(1), null));
+        recipe.addIngredient(new Ingredient("Clove of Garlic, Choppedr", new BigDecimal(1), numberUom));
         recipe.addIngredient(new Ingredient("finely grated orange zestr", new BigDecimal(1), tablespoonUom));
         recipe.addIngredient(new Ingredient("fresh-squeezed orange juice", new BigDecimal(3), tablespoonUom));
         recipe.addIngredient(new Ingredient("Olive Oil", new BigDecimal(2), tablespoonUom));
         recipe.addIngredient(new Ingredient("boneless chicken thighs", new BigDecimal(4), tablespoonUom));
-        recipe.addIngredient(new Ingredient("small corn tortillasr", new BigDecimal(8), null));
+        recipe.addIngredient(new Ingredient("small corn tortillasr", new BigDecimal(8), numberUom));
         recipe.addIngredient(new Ingredient("packed baby arugula", new BigDecimal(3), cupsUom));
-        recipe.addIngredient(new Ingredient("medium ripe avocados, slic", new BigDecimal(2), null));
-        recipe.addIngredient(new Ingredient("radishes, thinly sliced", new BigDecimal(4), null));
+        recipe.addIngredient(new Ingredient("medium ripe avocados, slic", new BigDecimal(2), numberUom));
+        recipe.addIngredient(new Ingredient("radishes, thinly sliced", new BigDecimal(4), numberUom));
         recipe.addIngredient(new Ingredient("cherry tomatoes, halved", new BigDecimal(".5"), pintUom));
-        recipe.addIngredient(new Ingredient("red onion, thinly sliced", new BigDecimal(".25"), null));
-        recipe.addIngredient(new Ingredient("Roughly chopped cilantro", new BigDecimal(4), null));
+        recipe.addIngredient(new Ingredient("red onion, thinly sliced", new BigDecimal(".25"), numberUom));
+        recipe.addIngredient(new Ingredient("Roughly chopped cilantro", new BigDecimal(4), numberUom));
         recipe.addIngredient(new Ingredient("cup sour cream thinned with 1/4 cup milk", new BigDecimal(4), cupsUom));
-        recipe.addIngredient(new Ingredient("lime, cut into wedges", new BigDecimal(4), null));
+        recipe.addIngredient(new Ingredient("lime, cut into wedges", new BigDecimal(4), numberUom));
 
         return recipe;
     }

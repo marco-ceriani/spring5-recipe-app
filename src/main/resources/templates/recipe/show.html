@@ -99,7 +99,7 @@
                             <div class="col-md-12">
                                 <ul th:remove="all-but-first">
                                     <li th:each="ing : ${recipe.ingredients}"
-                                        th:text="${ing.amount} + ' ' +(${ing.unitOfMeasure} ? (${ing.unitOfMeasure?.description} + ' of ') : '') + ${ing.description}">1
+                                        th:text="|${ing.amount} ${#strings.toLowerCase(ing.unitOfMeasure?.description)} of ${ing.description}|">1
                                         Cup of
                                         milk</li>
                                     <li>1 Teaspoon of chocolate</li>
