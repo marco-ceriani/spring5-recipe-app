@@ -71,8 +71,11 @@
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>Difficulty:</label>
-                                    <select class="form-control">
-                                        <option>Easy</option>
+                                    <select class="form-control" th:field="*{difficulty}" th:remove="all-but-first">
+                                        <option th:each="difficultyValue : ${T(guru.springframework.domain.Difficulty).values()}"
+                                            th:value="${difficultyValue.name()}"
+                                            th:text="${#strings.capitalize(difficultyValue.name().toLowerCase())}">Easy
+                                        </option>
                                         <option>Medium</option>
                                         <option>Hard</option>
                                     </select>
