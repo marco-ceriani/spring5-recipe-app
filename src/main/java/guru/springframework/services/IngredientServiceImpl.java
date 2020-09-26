@@ -65,12 +65,15 @@ public class IngredientServiceImpl implements IngredientService {
             UnitOfMeasure unitOfMeasure = getUnitOfMeasure(command);
             ingredient.setUnitOfMeasure(unitOfMeasure);
         } else {
-            recipe.addIngredient(inConverter.convert(command));
+            Ingredient ingredient = inConverter.convert(command);
+            ingredient.setRecipe(recipe);
+            recipe.addIngredient(ingredient);
         }
 
         Recipe savedRecipe = recipeRepository.save(recipe);
 
-        Ingredient savedIngredient = findIngredient(recipe, command.getId()).get();
+        Ingredient savedIngredient = findIngredient(recipe, command.getId())
+                .orElseGet(() -> findIngredientByValue(recipe, command));
         return outConverter.convert(savedIngredient);
     }
 
@@ -78,6 +81,15 @@ public class IngredientServiceImpl implements IngredientService {
         return recipe.getIngredients().stream()
                 .filter(ingredient -> ingredient.getId().equals(id))
                 .findFirst();
+    }
+
+    private Ingredient findIngredientByValue(Recipe recipe, IngredientCommand command) {
+        return recipe.getIngredients().stream()
+                .filter(ingredient -> ingredient.getDescription().equals(command.getDescription()))
+                .filter(ingredient -> ingredient.getAmount().equals(command.getAmount()))
+                .filter(ingredient -> ingredient.getUnitOfMeasure().getId().equals(command.getUnitOfMeasure().getId()))
+                .findFirst()
+                .orElse(null);
     }
 
     private UnitOfMeasure getUnitOfMeasure(IngredientCommand command) {
