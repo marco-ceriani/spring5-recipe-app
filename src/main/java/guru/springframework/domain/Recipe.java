@@ -30,7 +30,7 @@ public class Recipe {
     private Set<Ingredient> ingredients = new HashSet<>();
 
     @Lob
-    private Byte[] image;
+    private byte[] image;
 
     @OneToOne(cascade = CascadeType.ALL)
     private Notes notes;
