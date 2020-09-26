@@ -9,6 +9,7 @@ import guru.springframework.converters.UnitOfMeasureToUnitOfMeasureCommand;
 import guru.springframework.domain.Ingredient;
 import guru.springframework.domain.Recipe;
 import guru.springframework.domain.UnitOfMeasure;
+import guru.springframework.repositories.IngredientRepository;
 import guru.springframework.repositories.RecipeRepository;
 import guru.springframework.repositories.UnitOfMeasureRepository;
 import org.junit.Before;
@@ -34,6 +35,9 @@ public class IngredientServiceImplTest {
     @Mock
     private UnitOfMeasureRepository unitOfMeasureRepository;
 
+    @Mock
+    private IngredientRepository ingredientRepository;
+
     private IngredientService ingredientService;
 
     public IngredientServiceImplTest() {
@@ -45,7 +49,7 @@ public class IngredientServiceImplTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        ingredientService = new IngredientServiceImpl(recipeRepository, ingredientToIngredientCommand, inConverter, unitOfMeasureRepository);
+        ingredientService = new IngredientServiceImpl(recipeRepository, ingredientToIngredientCommand, inConverter, unitOfMeasureRepository, ingredientRepository);
     }
 
     @Test
@@ -135,6 +139,27 @@ public class IngredientServiceImplTest {
         assertEquals(ingredientId, savedCommand.getId());
         verify(recipeRepository).findById(recipeId);
         verify(recipeRepository).save(any(Recipe.class));
+    }
+
+    @Test
+    public void testDeleteIngredient() throws Exception {
+
+        long recipeId = 7L;
+        long ingredientId = 15L;
+
+        Recipe recipe = new Recipe();
+        Ingredient ingredient = new Ingredient();
+        ingredient.setId(ingredientId);
+        recipe.addIngredient(ingredient);
+        when(recipeRepository.findById(recipeId)).thenReturn(Optional.of(recipe));
+
+        // when
+        ingredientService.deleteById(recipeId, ingredientId);
+
+        // then
+        verify(recipeRepository).findById(recipeId);
+        verify(ingredientRepository).deleteById(ingredientId);
+
     }
 
 }

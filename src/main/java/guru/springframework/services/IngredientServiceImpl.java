@@ -6,6 +6,7 @@ import guru.springframework.converters.IngredientToIngredientCommand;
 import guru.springframework.domain.Ingredient;
 import guru.springframework.domain.Recipe;
 import guru.springframework.domain.UnitOfMeasure;
+import guru.springframework.repositories.IngredientRepository;
 import guru.springframework.repositories.RecipeRepository;
 import guru.springframework.repositories.UnitOfMeasureRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -23,12 +24,14 @@ public class IngredientServiceImpl implements IngredientService {
     private final IngredientToIngredientCommand outConverter;
     private final IngredientCommandToIngredient inConverter;
     private final UnitOfMeasureRepository unitOfMeasureRepository;
+    private final IngredientRepository ingredientRepository;
 
-    public IngredientServiceImpl(RecipeRepository recipeRepository, IngredientToIngredientCommand outConverter, IngredientCommandToIngredient inConverter, UnitOfMeasureRepository unitOfMeasureRepository) {
+    public IngredientServiceImpl(RecipeRepository recipeRepository, IngredientToIngredientCommand outConverter, IngredientCommandToIngredient inConverter, UnitOfMeasureRepository unitOfMeasureRepository, IngredientRepository ingredientRepository) {
         this.recipeRepository = recipeRepository;
         this.outConverter = outConverter;
         this.inConverter = inConverter;
         this.unitOfMeasureRepository = unitOfMeasureRepository;
+        this.ingredientRepository = ingredientRepository;
     }
 
     @Override
@@ -75,6 +78,15 @@ public class IngredientServiceImpl implements IngredientService {
         Ingredient savedIngredient = findIngredient(recipe, command.getId())
                 .orElseGet(() -> findIngredientByValue(recipe, command));
         return outConverter.convert(savedIngredient);
+    }
+
+    @Override
+    public void deleteById(long recipeId, long id) {
+        log.info("deleting ingredient {} from recipe {}", id, recipeId);
+        Recipe recipe = recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new RuntimeException("Invalid recipe id " + recipeId));
+
+        ingredientRepository.deleteById(id);
     }
 
     private Optional<Ingredient> findIngredient(Recipe recipe, Long id) {
