@@ -49,6 +49,14 @@ public class RecipeControllerTest {
     }
 
     @Test
+    public void testGetRecipeInvalidNumber() throws Exception {
+        mockMvc.perform(get("/recipe/not-a-number/show"))
+                .andExpect(status().isBadRequest())
+                .andExpect(view().name("error400"))
+                .andExpect(model().attributeExists("exception"));
+    }
+
+    @Test
     public void testGetRecipeNotFound() throws Exception {
         Recipe recipe = new Recipe();
         recipe.setId(1L);
