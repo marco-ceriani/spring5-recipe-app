@@ -23,20 +23,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class ImageControllerTest {
 
+    MockMvc mockMvc;
     @Mock
     private ImageService imageService;
-
     @Mock
     private RecipeService recipeService;
-
-    MockMvc mockMvc;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
         ImageController controller = new ImageController(imageService, recipeService);
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(controller)
+                .setControllerAdvice(new ControllerExceptionHandler())
+                .build();
     }
 
     @Test
@@ -52,6 +53,15 @@ public class ImageControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("recipe"))
                 .andExpect(view().name("recipe/imageuploadform"));
+    }
+
+    @Test
+    public void testImageFormInvalidId() throws Exception {
+        // when
+        mockMvc.perform(get("/recipe/not-a-number/image"))
+                .andExpect(status().isBadRequest())
+                .andExpect(model().attributeExists("exception"))
+                .andExpect(view().name("error400"));
     }
 
     @Test
@@ -71,7 +81,7 @@ public class ImageControllerTest {
 
         // given
         long recipeId = 6L;
-        byte [] content = "some content".getBytes();
+        byte[] content = "some content".getBytes();
         RecipeCommand command = new RecipeCommand();
         command.setId(recipeId);
         command.setImage(content);
@@ -79,7 +89,7 @@ public class ImageControllerTest {
         when(recipeService.findCommandById(recipeId)).thenReturn(command);
 
         // when
-        MockHttpServletResponse resp =  mockMvc.perform(get("/recipe/"+recipeId + "/recipeimage"))
+        MockHttpServletResponse resp = mockMvc.perform(get("/recipe/" + recipeId + "/recipeimage"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
 
