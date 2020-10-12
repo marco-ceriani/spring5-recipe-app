@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class UnitOfMeasureServiceImplTest  {
+public class UnitOfMeasureServiceImplTest  {
 
     private UnitOfMeasureToUnitOfMeasureCommand outConverter = new UnitOfMeasureToUnitOfMeasureCommand();
     private UnitOfMeasureService service;
@@ -31,7 +31,7 @@ class UnitOfMeasureServiceImplTest  {
     }
 
     @Test
-    void testListAllUoms() {
+    public void testListAllUoms() {
         // given
         Set<UnitOfMeasure> unitOfMeasures = new HashSet<>();
         UnitOfMeasure uom1 = new UnitOfMeasure();
