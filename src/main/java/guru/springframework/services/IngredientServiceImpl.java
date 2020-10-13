@@ -35,7 +35,7 @@ public class IngredientServiceImpl implements IngredientService {
     }
 
     @Override
-    public IngredientCommand findByRecipeIdAndIngredientId(long recipeId, long ingredientId) {
+    public IngredientCommand findByRecipeIdAndIngredientId(String recipeId, String ingredientId) {
         Optional<Recipe> recipe = recipeRepository.findById(recipeId);
         Set<Ingredient> ingredients = recipe.map(Recipe::getIngredients)
                 .orElseThrow(() -> new RuntimeException("Recipe not found " + recipeId));
@@ -81,7 +81,7 @@ public class IngredientServiceImpl implements IngredientService {
     }
 
     @Override
-    public void deleteById(long recipeId, long id) {
+    public void deleteById(String recipeId, String id) {
         log.info("deleting ingredient {} from recipe {}", id, recipeId);
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RuntimeException("Invalid recipe id " + recipeId));
@@ -89,7 +89,7 @@ public class IngredientServiceImpl implements IngredientService {
         ingredientRepository.deleteById(id);
     }
 
-    private Optional<Ingredient> findIngredient(Recipe recipe, Long id) {
+    private Optional<Ingredient> findIngredient(Recipe recipe, String id) {
         return recipe.getIngredients().stream()
                 .filter(ingredient -> ingredient.getId().equals(id))
                 .findFirst();
@@ -105,7 +105,7 @@ public class IngredientServiceImpl implements IngredientService {
     }
 
     private UnitOfMeasure getUnitOfMeasure(IngredientCommand command) {
-        Long uomId = command.getUnitOfMeasure().getId();
+        String uomId = command.getUnitOfMeasure().getId();
         return unitOfMeasureRepository.findById(uomId)
                 .orElseThrow(() -> new RuntimeException("Unit of Measure not found: " + uomId));
     }

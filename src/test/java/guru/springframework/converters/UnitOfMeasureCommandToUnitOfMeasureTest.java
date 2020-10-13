@@ -29,7 +29,7 @@ public class UnitOfMeasureCommandToUnitOfMeasureTest {
     @Test
     public void testConvert() throws Exception {
 
-        Long id = 3L;
+        String id = "3";
         String description = "description";
         UnitOfMeasureCommand command = new UnitOfMeasureCommand();
         command.setId(id);

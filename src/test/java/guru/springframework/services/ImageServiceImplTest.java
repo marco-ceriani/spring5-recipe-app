@@ -32,7 +32,7 @@ public class ImageServiceImplTest {
     @Test
     public void saveImageFile() throws Exception {
         // given
-        Long id = 1L;
+        String id = "1";
         MultipartFile multipartFile = new MockMultipartFile("imagefile", "testing.txt", "text/plain",
                 "This is a string in place of the image".getBytes());
 

@@ -56,36 +56,36 @@ public class IngredientServiceImplTest {
     public void findByRecipeIdAndIngredientId() {
         //given
         Recipe recipe = new Recipe();
-        recipe.setId(1L);
+        recipe.setId("1");
 
         Ingredient ingredient1 = new Ingredient();
-        ingredient1.setId(1L);
+        ingredient1.setId("1");
 
         Ingredient ingredient2 = new Ingredient();
-        ingredient2.setId(1L);
+        ingredient2.setId("1");
 
         Ingredient ingredient3 = new Ingredient();
-        ingredient3.setId(3L);
+        ingredient3.setId("3");
 
         recipe.addIngredient(ingredient1);
         recipe.addIngredient(ingredient2);
         recipe.addIngredient(ingredient3);
 
-        when(recipeRepository.findById(1L)).thenReturn(Optional.of(recipe));
+        when(recipeRepository.findById("1")).thenReturn(Optional.of(recipe));
 
         // when
-        IngredientCommand ingredientCommand = ingredientService.findByRecipeIdAndIngredientId(1L, 3L);
+        IngredientCommand ingredientCommand = ingredientService.findByRecipeIdAndIngredientId("1", "3");
 
         // then
-        assertEquals(Long.valueOf(1), ingredientCommand.getRecipeId());
-        assertEquals(Long.valueOf(3), ingredientCommand.getId());
+        assertEquals("1", ingredientCommand.getRecipeId());
+        assertEquals("3", ingredientCommand.getId());
     }
 
     @Test
     public void testSaveRecipe() {
         // given
-        Long recipeId = 2L;
-        Long ingredientId = 3L;
+        String recipeId = "2";
+        String ingredientId = "3";
 
         IngredientCommand command = new IngredientCommand();
         command.setId(ingredientId);
@@ -110,14 +110,14 @@ public class IngredientServiceImplTest {
     @Test
     public void testUpdateIngredient() {
         // given
-        Long recipeId = 2L;
-        Long ingredientId = 3L;
+        String recipeId = "2";
+        String ingredientId = "3";
 
         UnitOfMeasureCommand uomCommand = new UnitOfMeasureCommand();
-        uomCommand.setId(0L);
+        uomCommand.setId("0");
         UnitOfMeasure uom = new UnitOfMeasure();
-        uom.setId(0L);
-        when(unitOfMeasureRepository.findById(0L)).thenReturn(Optional.of(uom));
+        uom.setId("0");
+        when(unitOfMeasureRepository.findById("0")).thenReturn(Optional.of(uom));
 
         IngredientCommand command = new IngredientCommand();
         command.setId(ingredientId);
@@ -144,8 +144,8 @@ public class IngredientServiceImplTest {
     @Test
     public void testDeleteIngredient() throws Exception {
 
-        long recipeId = 7L;
-        long ingredientId = 15L;
+        String recipeId = "7";
+        String ingredientId = "15";
 
         Recipe recipe = new Recipe();
         Ingredient ingredient = new Ingredient();

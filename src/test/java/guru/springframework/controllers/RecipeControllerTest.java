@@ -13,7 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -41,9 +40,9 @@ public class RecipeControllerTest {
     @Test
     public void testGetRecipe() throws Exception {
         Recipe recipe = new Recipe();
-        recipe.setId(1L);
+        recipe.setId("1");
 
-        when(recipeService.findById(anyLong())).thenReturn(recipe);
+        when(recipeService.findById(anyString())).thenReturn(recipe);
 
         mockMvc.perform(get("/recipe/1/show"))
                 .andExpect(status().isOk())
@@ -52,19 +51,11 @@ public class RecipeControllerTest {
     }
 
     @Test
-    public void testGetRecipeInvalidNumber() throws Exception {
-        mockMvc.perform(get("/recipe/not-a-number/show"))
-                .andExpect(status().isBadRequest())
-                .andExpect(view().name("error400"))
-                .andExpect(model().attributeExists("exception"));
-    }
-
-    @Test
     public void testGetRecipeNotFound() throws Exception {
         Recipe recipe = new Recipe();
-        recipe.setId(1L);
+        recipe.setId("1");
 
-        when(recipeService.findById(anyLong())).thenThrow(NotFoundException.class);
+        when(recipeService.findById(anyString())).thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/recipe/1/show"))
                 .andExpect(status().isNotFound())
@@ -74,7 +65,7 @@ public class RecipeControllerTest {
     @Test
     public void testGetNewRecipeForm() throws Exception {
         RecipeCommand recipe = new RecipeCommand();
-        recipe.setId(1L);
+        recipe.setId("1");
 
         mockMvc.perform(get("/recipe/new"))
                 .andExpect(status().isOk())
@@ -85,7 +76,7 @@ public class RecipeControllerTest {
     @Test
     public void testPostNewRecipe() throws Exception {
         RecipeCommand command = new RecipeCommand();
-        command.setId(5L);
+        command.setId("5");
 
         when(recipeService.saveRecipeCommand(any())).thenReturn(command);
 
@@ -102,7 +93,7 @@ public class RecipeControllerTest {
     @Test
     public void testPostNewRecipeFormValidationFail() throws Exception {
         RecipeCommand command = new RecipeCommand();
-        command.setId(5L);
+        command.setId("5");
 
         when(recipeService.saveRecipeCommand(any())).thenReturn(command);
 
@@ -118,9 +109,9 @@ public class RecipeControllerTest {
     @Test
     public void testGetUpdateView() throws Exception {
         RecipeCommand recipe = new RecipeCommand();
-        recipe.setId(7L);
+        recipe.setId("7");
 
-        when(recipeService.findCommandById(anyLong())).thenReturn(recipe);
+        when(recipeService.findCommandById(anyString())).thenReturn(recipe);
 
         mockMvc.perform(get("/recipe/1/update"))
                 .andExpect(status().isOk())
@@ -134,7 +125,7 @@ public class RecipeControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/"));
 
-        verify(recipeService, times(1)).deleteById(Long.valueOf(1));
+        verify(recipeService, times(1)).deleteById("1");
     }
 
 }

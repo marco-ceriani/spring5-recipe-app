@@ -43,26 +43,26 @@ public class RecipeServiceImplTest {
     @Test
     public void getRecipeByIdTest() throws Exception {
         Recipe recipe = new Recipe();
-        recipe.setId(1l);
+        recipe.setId("1");
 
-        when(recipeRepository.findById(1L)).thenReturn(Optional.of(recipe));
+        when(recipeRepository.findById("1")).thenReturn(Optional.of(recipe));
 
-        Recipe recipeReturned = recipeService.findById(1L);
+        Recipe recipeReturned = recipeService.findById("1");
 
         assertNotNull(recipeReturned);
-        verify(recipeRepository).findById(1L);
+        verify(recipeRepository).findById("1");
         verify(recipeRepository, never()).findAll();
     }
 
 
     @Test(expected = NotFoundException.class)
     public void testGetRecipeNotFound() throws Exception {
-        when(recipeRepository.findById(anyLong())).thenReturn(Optional.empty());
+        when(recipeRepository.findById(anyString())).thenReturn(Optional.empty());
 
         RecipeCommand recipeCommand = new RecipeCommand();
-        recipeCommand.setId(1L);
+        recipeCommand.setId("1");
 
-        recipeService.findById(1L);
+        recipeService.findById("1");
     }
 
     @Test
@@ -79,7 +79,7 @@ public class RecipeServiceImplTest {
     @Test
     public void testDeleteById() {
         // given
-        Long idToDelete = Long.valueOf(2L);
+        String idToDelete = "2";
 
         // when
         recipeService.deleteById(idToDelete);

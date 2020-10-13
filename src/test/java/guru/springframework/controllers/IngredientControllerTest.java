@@ -46,7 +46,7 @@ public class IngredientControllerTest {
 
         // given
         RecipeCommand recipeCommand = new RecipeCommand();
-        when(recipeService.findCommandById(anyLong())).thenReturn(recipeCommand);
+        when(recipeService.findCommandById(anyString())).thenReturn(recipeCommand);
 
         // when
         mockMvc.perform(get("/recipe/1/ingredients"))
@@ -55,7 +55,7 @@ public class IngredientControllerTest {
                 .andExpect(model().attributeExists("recipe"));
 
         // then
-        verify(recipeService, times(1)).findCommandById(1);
+        verify(recipeService, times(1)).findCommandById("1");
     }
 
     @Test
@@ -63,7 +63,7 @@ public class IngredientControllerTest {
 
         // given
         IngredientCommand ingredientCommand = new IngredientCommand();
-        when(ingredientService.findByRecipeIdAndIngredientId(anyLong(), anyLong())).thenReturn(ingredientCommand);
+        when(ingredientService.findByRecipeIdAndIngredientId(anyString(), anyString())).thenReturn(ingredientCommand);
 
         // when
         mockMvc.perform(get("/recipe/1/ingredient/2/show"))
@@ -72,13 +72,13 @@ public class IngredientControllerTest {
                 .andExpect(model().attributeExists("ingredient"));
 
         // then
-        verify(ingredientService, times(1)).findByRecipeIdAndIngredientId(1, 2);
+        verify(ingredientService, times(1)).findByRecipeIdAndIngredientId("1", "2");
     }
 
     @Test
     public void testNewIngredientForm() throws Exception {
         // given
-        Long commandId = 1L;
+        String commandId = "1";
         RecipeCommand recipeCommand = new RecipeCommand();
         recipeCommand.setId(commandId);
         when(recipeService.findCommandById(commandId)).thenReturn(recipeCommand);
@@ -98,7 +98,7 @@ public class IngredientControllerTest {
 
         // given
         IngredientCommand ingredientCommand = new IngredientCommand();
-        when(ingredientService.findByRecipeIdAndIngredientId(1L, 2L)).thenReturn(ingredientCommand);
+        when(ingredientService.findByRecipeIdAndIngredientId("1", "2")).thenReturn(ingredientCommand);
         when(unitOfMeasureService.listAllUoms()).thenReturn(new HashSet<>());
 
         // when
@@ -114,8 +114,8 @@ public class IngredientControllerTest {
 
         // given
         IngredientCommand ingredientCommand = new IngredientCommand();
-        ingredientCommand.setId(5L);
-        ingredientCommand.setRecipeId(12L);
+        ingredientCommand.setId("5");
+        ingredientCommand.setRecipeId("12");
         when(ingredientService.saveIngredient(any(IngredientCommand.class))).thenReturn(ingredientCommand);
 
         // when
@@ -137,7 +137,7 @@ public class IngredientControllerTest {
         .andExpect(view().name("redirect:/recipe/7/ingredients"));
 
         // then
-        verify(ingredientService).deleteById(7L, 37L);
+        verify(ingredientService).deleteById("7", "37");
     }
 
 }

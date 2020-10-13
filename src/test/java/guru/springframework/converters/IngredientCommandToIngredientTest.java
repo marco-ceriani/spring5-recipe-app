@@ -14,10 +14,10 @@ public class IngredientCommandToIngredientTest {
 
 
     IngredientCommandToIngredient converter;
-    private Long id = 3L;
+    private String id = "3";
     private String description = "description";
     private BigDecimal amount = BigDecimal.valueOf(10);
-    private Long uomId = 12L;
+    private String uomId = "12";
 
     @Before
     public void setUp() {

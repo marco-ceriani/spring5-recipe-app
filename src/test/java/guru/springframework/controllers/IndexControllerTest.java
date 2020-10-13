@@ -52,10 +52,10 @@ public class IndexControllerTest {
         // given
         Set<Recipe> mockedRecipes = new HashSet<>();
         Recipe recipe1 = new Recipe();
-        recipe1.setId(1l);
+        recipe1.setId("1");
         mockedRecipes.add(recipe1);
         Recipe recipe2 = new Recipe();
-        recipe2.setId(2l);
+        recipe2.setId("2");
         mockedRecipes.add(recipe2);
 
         when(recipeService.listRecipes()).thenReturn(mockedRecipes);

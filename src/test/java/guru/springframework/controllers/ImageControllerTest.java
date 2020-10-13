@@ -43,7 +43,7 @@ public class ImageControllerTest {
     @Test
     public void testImageForm() throws Exception {
         // given
-        long recipeId = 42L;
+        String recipeId = "42";
         RecipeCommand recipe = new RecipeCommand();
         recipe.setId(recipeId);
         when(recipeService.findCommandById(recipeId)).thenReturn(recipe);
@@ -56,15 +56,6 @@ public class ImageControllerTest {
     }
 
     @Test
-    public void testImageFormInvalidId() throws Exception {
-        // when
-        mockMvc.perform(get("/recipe/not-a-number/image"))
-                .andExpect(status().isBadRequest())
-                .andExpect(model().attributeExists("exception"))
-                .andExpect(view().name("error400"));
-    }
-
-    @Test
     public void handleImagePost() throws Exception {
         MockMultipartFile multipartFile =
                 new MockMultipartFile("imagefile", "testing.txt", "text/plain",
@@ -73,14 +64,14 @@ public class ImageControllerTest {
         mockMvc.perform(multipart("/recipe/1/image").file(multipartFile))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(header().string("Location", "/recipe/1/show"));
-        verify(imageService).saveImageFile(eq(1L), any());
+        verify(imageService).saveImageFile(eq("1"), any());
     }
 
     @Test
     public void readImageFromRepository() throws Exception {
 
         // given
-        long recipeId = 6L;
+        String recipeId = "6";
         byte[] content = "some content".getBytes();
         RecipeCommand command = new RecipeCommand();
         command.setId(recipeId);

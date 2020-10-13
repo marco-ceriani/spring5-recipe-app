@@ -29,7 +29,7 @@ public class NotesCommandToNotesTest {
     @Test
     public void testConvert() throws Exception {
 
-        Long id = 3L;
+        String id = "3";
         String recipeNotes = "description";
         NotesCommand command = new NotesCommand();
         command.setId(id);

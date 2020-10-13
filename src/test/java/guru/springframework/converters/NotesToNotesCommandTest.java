@@ -30,7 +30,7 @@ public class NotesToNotesCommandTest {
     @Test
     public void testConvert() throws Exception {
 
-        Long id = 3L;
+        String id = "3";
         String recipeNotes = "notes for the recipe";
         Notes notes = new Notes();
         notes.setId(id);

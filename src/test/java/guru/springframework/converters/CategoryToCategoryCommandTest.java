@@ -29,7 +29,7 @@ public class CategoryToCategoryCommandTest {
     @Test
     public void testConvert() throws Exception {
 
-        Long id = 3L;
+        String id = "3";
         String description = "description";
         Category command = new Category();
         command.setId(id);
