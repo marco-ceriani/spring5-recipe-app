@@ -1,5 +1,6 @@
 spring:
   datasource:
+    platform: mysql
     url: jdbc:mysql://localhost:3306/sfg_dev
     username: sfg_dev_user
     password: guru
