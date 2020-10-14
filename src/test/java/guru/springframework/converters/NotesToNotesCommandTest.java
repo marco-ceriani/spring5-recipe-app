@@ -2,7 +2,6 @@ package guru.springframework.converters;
 
 import guru.springframework.commands.NotesCommand;
 import guru.springframework.domain.Notes;
-import guru.springframework.domain.Recipe;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,7 +34,6 @@ public class NotesToNotesCommandTest {
         Notes notes = new Notes();
         notes.setId(id);
         notes.setRecipeNotes(recipeNotes);
-        notes.setRecipe(new Recipe());
 
         NotesCommand converted = converter.convert(notes);
 

@@ -69,7 +69,6 @@ public class IngredientServiceImpl implements IngredientService {
             ingredient.setUnitOfMeasure(unitOfMeasure);
         } else {
             Ingredient ingredient = inConverter.convert(command);
-            ingredient.setRecipe(recipe);
             recipe.addIngredient(ingredient);
         }
 
@@ -77,7 +76,9 @@ public class IngredientServiceImpl implements IngredientService {
 
         Ingredient savedIngredient = findIngredient(recipe, command.getId())
                 .orElseGet(() -> findIngredientByValue(recipe, command));
-        return outConverter.convert(savedIngredient);
+        IngredientCommand savedCommand = outConverter.convert(savedIngredient);
+        savedCommand.setRecipeId(recipe.getId());
+        return savedCommand;
     }
 
     @Override

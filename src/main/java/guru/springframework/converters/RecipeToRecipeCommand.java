@@ -8,7 +8,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -43,14 +43,14 @@ public class RecipeToRecipeCommand implements Converter<Recipe, RecipeCommand> {
         recipe.setDifficulty(source.getDifficulty());
         recipe.setImage(source.getImage());
 
-        Set<IngredientCommand> ingredients = source.getIngredients().stream()
+        List<IngredientCommand> ingredients = source.getIngredients().stream()
                 .map(ingredientConverter::convert)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
         recipe.setIngredients(ingredients);
 
-        Set<CategoryCommand> categories = source.getCategories().stream()
+        List<CategoryCommand> categories = source.getCategories().stream()
                 .map(categoryConverter::convert)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
         recipe.setCategories(categories);
 
         return recipe;

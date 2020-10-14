@@ -9,8 +9,8 @@ import guru.springframework.domain.Recipe;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -62,7 +62,7 @@ public class RecipeCommandToRecipeTest {
         cateogry1.setId(CAT_ID_1);
         CategoryCommand cateogry2 = new CategoryCommand();
         cateogry2.setId(CAT_ID_2);
-        Set<CategoryCommand> categories = new HashSet<>();
+        List<CategoryCommand> categories = new ArrayList<>();
         categories.add(cateogry1);
         categories.add(cateogry2);
 
@@ -70,7 +70,7 @@ public class RecipeCommandToRecipeTest {
         ingredient1.setId(INGRED_ID_1);
         IngredientCommand ingredient2 = new IngredientCommand();
         ingredient2.setId(INGRED_ID_2);
-        Set<IngredientCommand> ingredients = new HashSet<>();
+        List<IngredientCommand> ingredients = new ArrayList<>();
         ingredients.add(ingredient1);
         ingredients.add(ingredient2);
 

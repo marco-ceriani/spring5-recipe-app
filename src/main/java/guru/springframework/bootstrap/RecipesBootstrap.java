@@ -143,7 +143,7 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
         UnitOfMeasure dashUom =
                 unitOfMeasureRepository.findByDescription("Dash").orElseThrow(uomExceptionSupplier);
         UnitOfMeasure numberUom =
-                unitOfMeasureRepository.findByDescription("").orElseThrow(uomExceptionSupplier);
+                unitOfMeasureRepository.findByDescription("Each").orElseThrow(uomExceptionSupplier);
 
         recipe.addIngredient(new Ingredient("ripe avocado", BigDecimal.valueOf(2), numberUom));
         recipe.addIngredient(new Ingredient("salt", BigDecimal.valueOf(0.25), teaspoonUom));
@@ -204,7 +204,7 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
         UnitOfMeasure pintUom =
                 unitOfMeasureRepository.findByDescription("Pint").orElseThrow(uomExceptionSupplier);
         UnitOfMeasure numberUom =
-                unitOfMeasureRepository.findByDescription("").orElseThrow(uomExceptionSupplier);
+                unitOfMeasureRepository.findByDescription("Each").orElseThrow(uomExceptionSupplier);
 
         recipe.addIngredient(new Ingredient("Ancho Chili Powder", new BigDecimal(2), tablespoonUom));
         recipe.addIngredient(new Ingredient("Dried Oregano", new BigDecimal(1), teaspoonUom));
