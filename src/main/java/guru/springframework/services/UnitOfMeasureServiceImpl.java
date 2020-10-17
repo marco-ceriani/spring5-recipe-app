@@ -2,28 +2,24 @@ package guru.springframework.services;
 
 import guru.springframework.commands.UnitOfMeasureCommand;
 import guru.springframework.converters.UnitOfMeasureToUnitOfMeasureCommand;
-import guru.springframework.repositories.UnitOfMeasureRepository;
+import guru.springframework.repositories.reactive.UnitOfMeasureReactiveRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import reactor.core.publisher.Flux;
 
 @Service
 public class UnitOfMeasureServiceImpl implements UnitOfMeasureService {
 
-    private final UnitOfMeasureRepository unitOfMeasureRepository;
+    private final UnitOfMeasureReactiveRepository unitOfMeasureRepository;
     private final UnitOfMeasureToUnitOfMeasureCommand outConverter;
 
-    public UnitOfMeasureServiceImpl(UnitOfMeasureRepository unitOfMeasureRepository, UnitOfMeasureToUnitOfMeasureCommand outConverter) {
+    public UnitOfMeasureServiceImpl(UnitOfMeasureReactiveRepository unitOfMeasureRepository, UnitOfMeasureToUnitOfMeasureCommand outConverter) {
         this.unitOfMeasureRepository = unitOfMeasureRepository;
         this.outConverter = outConverter;
     }
 
     @Override
-    public Set<UnitOfMeasureCommand> listAllUoms() {
-        return StreamSupport.stream(unitOfMeasureRepository.findAll().spliterator(), false)
-                .map(outConverter::convert)
-                .collect(Collectors.toSet());
+    public Flux<UnitOfMeasureCommand> listAllUoms() {
+        return unitOfMeasureRepository.findAll()
+                .map(outConverter::convert);
     }
 }

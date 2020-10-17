@@ -1,6 +1,7 @@
 package guru.springframework.domain;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
@@ -9,6 +10,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class Ingredient {
 
     private String id = UUID.randomUUID().toString();
@@ -17,9 +19,6 @@ public class Ingredient {
 
     @DBRef
     private UnitOfMeasure unitOfMeasure;
-
-    public Ingredient() {
-    }
 
     public Ingredient(String description, BigDecimal amount, UnitOfMeasure unitOfMeasure) {
         this.description = description;

@@ -7,57 +7,52 @@ import guru.springframework.domain.Ingredient;
 import guru.springframework.domain.Recipe;
 import guru.springframework.domain.UnitOfMeasure;
 import guru.springframework.repositories.IngredientRepository;
-import guru.springframework.repositories.RecipeRepository;
-import guru.springframework.repositories.UnitOfMeasureRepository;
+import guru.springframework.repositories.reactive.RecipeReactiveRepository;
+import guru.springframework.repositories.reactive.UnitOfMeasureReactiveRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
-import java.util.Set;
 
 @Slf4j
 @Service
 public class IngredientServiceImpl implements IngredientService {
 
-    private final RecipeRepository recipeRepository;
+    private final RecipeReactiveRepository recipeRepository;
     private final IngredientToIngredientCommand outConverter;
     private final IngredientCommandToIngredient inConverter;
-    private final UnitOfMeasureRepository unitOfMeasureRepository;
-    private final IngredientRepository ingredientRepository;
+    private final UnitOfMeasureReactiveRepository unitOfMeasureRepository;
 
-    public IngredientServiceImpl(RecipeRepository recipeRepository, IngredientToIngredientCommand outConverter, IngredientCommandToIngredient inConverter, UnitOfMeasureRepository unitOfMeasureRepository, IngredientRepository ingredientRepository) {
+    public IngredientServiceImpl(RecipeReactiveRepository recipeRepository, IngredientToIngredientCommand outConverter, IngredientCommandToIngredient inConverter, UnitOfMeasureReactiveRepository unitOfMeasureRepository, IngredientRepository ingredientRepository) {
         this.recipeRepository = recipeRepository;
         this.outConverter = outConverter;
         this.inConverter = inConverter;
         this.unitOfMeasureRepository = unitOfMeasureRepository;
-        this.ingredientRepository = ingredientRepository;
     }
 
     @Override
-    public IngredientCommand findByRecipeIdAndIngredientId(String recipeId, String ingredientId) {
-        Optional<Recipe> recipe = recipeRepository.findById(recipeId);
-        Set<Ingredient> ingredients = recipe.map(Recipe::getIngredients)
-                .orElseThrow(() -> new RuntimeException("Recipe not found " + recipeId));
-
-        return ingredients.stream()
+    public Mono<IngredientCommand> findByRecipeIdAndIngredientId(String recipeId, String ingredientId) {
+        return recipeRepository.findById(recipeId)
+                .flatMapIterable(Recipe::getIngredients)
                 .filter(ingredient -> ingredient.getId().equals(ingredientId))
-                .map(outConverter::convert)
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Ingredient not found " + ingredientId));
-
+                .single()
+                .map(ingredient -> {
+                    IngredientCommand command = outConverter.convert(ingredient);
+                    command.setRecipeId(recipeId);
+                    return command;
+                });
     }
 
     @Override
     @Transactional
-    public IngredientCommand saveIngredient(IngredientCommand command) {
-        Optional<Recipe> recipeOpt = recipeRepository.findById(command.getRecipeId());
-        if (!recipeOpt.isPresent()) {
+    public Mono<IngredientCommand> saveIngredient(IngredientCommand command) {
+        Recipe recipe = recipeRepository.findById(command.getRecipeId()).block();
+        if (recipe == null) {
             log.error("recipe not found for id:{}", command.getRecipeId());
-            return new IngredientCommand();
+            return Mono.empty();
         }
-
-        Recipe recipe = recipeOpt.get();
 
         Optional<Ingredient> ingredientOpt = findIngredient(recipe, command.getId());
 
@@ -72,29 +67,37 @@ public class IngredientServiceImpl implements IngredientService {
             recipe.addIngredient(ingredient);
         }
 
-        Recipe savedRecipe = recipeRepository.save(recipe);
+        Recipe savedRecipe = recipeRepository.save(recipe).block();
 
         Ingredient savedIngredient = findIngredient(recipe, command.getId())
                 .orElseGet(() -> findIngredientByValue(recipe, command));
         IngredientCommand savedCommand = outConverter.convert(savedIngredient);
         savedCommand.setRecipeId(recipe.getId());
-        return savedCommand;
+        return Mono.just(savedCommand);
     }
 
     @Override
-    public void deleteById(String recipeId, String id) {
+    public Mono<Void> deleteById(String recipeId, String id) {
         log.info("deleting ingredient {} from recipe {}", id, recipeId);
-        Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new RuntimeException("Invalid recipe id " + recipeId));
+        return recipeRepository.findById(recipeId)
+                .doOnNext(recipe -> recipe.getIngredients().removeIf(ingredient -> ingredient.getId().equals(id)))
+                .map(recipeRepository::save)
+                .doOnError(error -> log.error("error deleting ingredient {} from recipe {}", id, recipeId, error))
+                .then();
 
-        ingredientRepository.deleteById(id);
     }
 
     private Optional<Ingredient> findIngredient(Recipe recipe, String id) {
         return recipe.getIngredients().stream()
                 .filter(ingredient -> ingredient.getId().equals(id))
-                .findFirst();
+                .findAny();
     }
+
+//    private Mono<Ingredient> findIngredient(Recipe recipe, String id) {
+//        return Flux.fromIterable(recipe.getIngredients())
+//                .filter(ingredient -> ingredient.getId().equals(id))
+//                .next();
+//    }
 
     private Ingredient findIngredientByValue(Recipe recipe, IngredientCommand command) {
         return recipe.getIngredients().stream()
@@ -107,7 +110,6 @@ public class IngredientServiceImpl implements IngredientService {
 
     private UnitOfMeasure getUnitOfMeasure(IngredientCommand command) {
         String uomId = command.getUnitOfMeasure().getId();
-        return unitOfMeasureRepository.findById(uomId)
-                .orElseThrow(() -> new RuntimeException("Unit of Measure not found: " + uomId));
+        return unitOfMeasureRepository.findById(uomId).block();
     }
 }
