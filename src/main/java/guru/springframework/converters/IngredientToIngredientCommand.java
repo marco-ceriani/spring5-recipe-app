@@ -2,6 +2,7 @@ package guru.springframework.converters;
 
 import guru.springframework.commands.IngredientCommand;
 import guru.springframework.domain.Ingredient;
+import guru.springframework.domain.Recipe;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -28,4 +29,11 @@ public class IngredientToIngredientCommand implements Converter<Ingredient, Ingr
         ingredient.setUnitOfMeasure(uomConverter.convert(source.getUnitOfMeasure()));
         return ingredient;
     }
+
+    public IngredientCommand convert(Ingredient source, Recipe recipe) {
+        IngredientCommand command = convert(source);
+        command.setRecipeId(recipe.getId());
+        return command;
+    }
+
 }

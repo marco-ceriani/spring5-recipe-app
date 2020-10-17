@@ -54,18 +54,7 @@ public class IngredientServiceImpl implements IngredientService {
             return Mono.empty();
         }
 
-        Optional<Ingredient> ingredientOpt = findIngredient(recipe, command.getId());
-
-        if (ingredientOpt.isPresent()) {
-            Ingredient ingredient = ingredientOpt.get();
-            ingredient.setDescription(command.getDescription());
-            ingredient.setAmount(command.getAmount());
-            UnitOfMeasure unitOfMeasure = getUnitOfMeasure(command);
-            ingredient.setUnitOfMeasure(unitOfMeasure);
-        } else {
-            Ingredient ingredient = inConverter.convert(command);
-            recipe.addIngredient(ingredient);
-        }
+        addOrUpdateIngredient(recipe, command);
 
         Recipe savedRecipe = recipeRepository.save(recipe).block();
 
@@ -74,6 +63,27 @@ public class IngredientServiceImpl implements IngredientService {
         IngredientCommand savedCommand = outConverter.convert(savedIngredient);
         savedCommand.setRecipeId(recipe.getId());
         return Mono.just(savedCommand);
+    }
+
+    private void addOrUpdateIngredient(Recipe recipe, IngredientCommand command) {
+        Optional<Ingredient> ingredientOpt = findIngredient(recipe, command.getId());
+        if (ingredientOpt.isPresent()) {
+            updateIngredient(ingredientOpt.get(), command);
+        } else {
+            recipe.addIngredient(inConverter.convert(command));
+        }
+    }
+
+    private void updateIngredient(Ingredient ingredient, IngredientCommand command) {
+        ingredient.setDescription(command.getDescription());
+        ingredient.setAmount(command.getAmount());
+        UnitOfMeasure unitOfMeasure = getUnitOfMeasure(command).block();
+        ingredient.setUnitOfMeasure(unitOfMeasure);
+    }
+
+    private Mono<UnitOfMeasure> getUnitOfMeasure(IngredientCommand command) {
+        String uomId = command.getUnitOfMeasure().getId();
+        return unitOfMeasureRepository.findById(uomId);
     }
 
     @Override
@@ -108,8 +118,4 @@ public class IngredientServiceImpl implements IngredientService {
                 .orElse(null);
     }
 
-    private UnitOfMeasure getUnitOfMeasure(IngredientCommand command) {
-        String uomId = command.getUnitOfMeasure().getId();
-        return unitOfMeasureRepository.findById(uomId).block();
-    }
 }
