@@ -1,11 +1,11 @@
 package guru.springframework.services;
 
-import guru.springframework.domain.Recipe;
-import guru.springframework.repositories.RecipeRepository;
+import guru.springframework.repositories.reactive.RecipeReactiveRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 
@@ -13,24 +13,26 @@ import java.io.IOException;
 @Slf4j
 public class ImageServiceImpl implements ImageService {
 
-    private final RecipeRepository recipeRepository;
+    private final RecipeReactiveRepository recipeRepository;
 
-    public ImageServiceImpl(RecipeRepository recipeRepository) {
+    public ImageServiceImpl(RecipeReactiveRepository recipeRepository) {
         this.recipeRepository = recipeRepository;
     }
 
     @Override
     @Transactional
-    public void saveImageFile(String recipeId, MultipartFile data) {
-
+    public Mono<Void> saveImageFile(String recipeId, MultipartFile data) {
         try {
-            Recipe recipe = recipeRepository.findById(recipeId)
-                    .orElseThrow(() -> new RuntimeException("Recipe not found " + recipeId));
-
-            recipe.setImage(data.getBytes());
-            recipeRepository.save(recipe);
+            byte[] bytes = data.getBytes();
+            return recipeRepository.findById(recipeId)
+                    .doOnNext(recipe -> recipe.setImage(bytes))
+                    .flatMap(recipeRepository::save)
+                    .doOnNext(rec -> log.info("saved image for recipe {}", rec.getId()))
+                    .doOnError(e -> log.error("error saving image for recipe{}", recipeId, e))
+                    .then();
         } catch (IOException e) {
-            log.error("Error saving image for recipe {}", recipeId, e);
+            return Mono.error(e);
         }
     }
+
 }

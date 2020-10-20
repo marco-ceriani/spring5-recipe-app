@@ -1,7 +1,7 @@
 package guru.springframework.services;
 
 import guru.springframework.domain.Recipe;
-import guru.springframework.repositories.RecipeRepository;
+import guru.springframework.repositories.reactive.RecipeReactiveRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -9,8 +9,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Optional;
+import reactor.core.publisher.Mono;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
@@ -19,7 +18,7 @@ import static org.mockito.Mockito.when;
 public class ImageServiceImplTest {
 
     @Mock
-    RecipeRepository recipeRepository;
+    RecipeReactiveRepository recipeRepository;
 
     ImageService imageService;
 
@@ -38,12 +37,13 @@ public class ImageServiceImplTest {
 
         Recipe recipe = new Recipe();
         recipe.setId(id);
-        when(recipeRepository.findById(id)).thenReturn(Optional.of(recipe));
+        when(recipeRepository.findById(id)).thenReturn(Mono.just(recipe));
+        when(recipeRepository.save(recipe)).thenReturn(Mono.empty());
 
         ArgumentCaptor<Recipe> recipeCaptor = ArgumentCaptor.forClass(Recipe.class);
 
         // when
-        imageService.saveImageFile(id, multipartFile);
+        imageService.saveImageFile(id, multipartFile).block();
 
         // then
         verify(recipeRepository).save(recipeCaptor.capture());
