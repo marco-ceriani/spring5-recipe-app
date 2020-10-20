@@ -44,7 +44,7 @@ public class RecipeServiceIT {
         // when
         String testDescription = "This is the test description";
         testCommand.setDescription(testDescription);
-        RecipeCommand savedCommand = recipeService.saveRecipeCommand(testCommand);
+        RecipeCommand savedCommand = recipeService.saveRecipeCommand(testCommand).block();
 
         // then
         assertEquals(testDescription, savedCommand.getDescription());

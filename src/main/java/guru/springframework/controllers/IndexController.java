@@ -1,9 +1,12 @@
 package guru.springframework.controllers;
 
+import guru.springframework.domain.Recipe;
 import guru.springframework.services.RecipeService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.List;
 
 /**
  * Created by jt on 6/1/17.
@@ -19,7 +22,8 @@ public class IndexController {
 
     @GetMapping({"", "/", "/index"})
     public String getIndexPage(Model model){
-        model.addAttribute("recipes", recipeService.listRecipes());
+        List<Recipe> o = recipeService.listRecipes().collectList().block();
+        model.addAttribute("recipes", o);
         return "index";
     }
 }

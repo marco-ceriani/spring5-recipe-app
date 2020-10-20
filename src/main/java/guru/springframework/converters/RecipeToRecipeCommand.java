@@ -3,6 +3,7 @@ package guru.springframework.converters;
 import guru.springframework.commands.CategoryCommand;
 import guru.springframework.commands.IngredientCommand;
 import guru.springframework.commands.RecipeCommand;
+import guru.springframework.domain.Ingredient;
 import guru.springframework.domain.Recipe;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
@@ -44,7 +45,7 @@ public class RecipeToRecipeCommand implements Converter<Recipe, RecipeCommand> {
         recipe.setImage(source.getImage());
 
         List<IngredientCommand> ingredients = source.getIngredients().stream()
-                .map(ingredientConverter::convert)
+                .map(i -> convertIngredient(i, source))
                 .collect(Collectors.toList());
         recipe.setIngredients(ingredients);
 
@@ -55,5 +56,11 @@ public class RecipeToRecipeCommand implements Converter<Recipe, RecipeCommand> {
 
         return recipe;
 
+    }
+
+    private IngredientCommand convertIngredient(Ingredient ingredient, Recipe recipe) {
+        IngredientCommand command = ingredientConverter.convert(ingredient);
+        command.setRecipeId(recipe.getId());
+        return command;
     }
 }
