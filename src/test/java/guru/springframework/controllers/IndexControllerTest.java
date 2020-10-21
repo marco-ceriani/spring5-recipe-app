@@ -4,27 +4,39 @@ import guru.springframework.domain.Recipe;
 import guru.springframework.services.RecipeService;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.ui.Model;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.Objects;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+@RunWith(SpringRunner.class)
+@WebFluxTest(controllers = IndexController.class)
+@Import(ThymeleafAutoConfiguration.class)
 public class IndexControllerTest {
 
     private IndexController indexController;
 
-    @Mock
+    @Autowired
+    WebTestClient webTestClient;
+
+    @MockBean
     private RecipeService recipeService;
 
     @Mock
@@ -38,14 +50,19 @@ public class IndexControllerTest {
 
     @Test
     public void testMockMVC() throws Exception {
-        when(recipeService.listRecipes()).thenReturn(Flux.empty());
+        Recipe recipe = new Recipe();
+        recipe.setDescription("Lasagne");
+        when(recipeService.listRecipes()).thenReturn(Flux.just(recipe));
 
-        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(indexController).build();
-
-        mockMvc.perform(get("/"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("index"));
-
+        webTestClient.get()
+                .uri("/")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .consumeWith(resp -> {
+                    String body = Objects.requireNonNull(resp.getResponseBody());
+                    assertThat(body, containsString("<td>Lasagne</td>"));
+                });
     }
 
     @Test
@@ -59,7 +76,7 @@ public class IndexControllerTest {
 
         when(recipeService.listRecipes()).thenReturn(Flux.just(recipe1, recipe2));
 
-        ArgumentCaptor<List<Recipe>> argCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<Flux<Recipe>> argCaptor = ArgumentCaptor.forClass(Flux.class);
 
         // when
         String templateName = indexController.getIndexPage(model);
@@ -68,7 +85,7 @@ public class IndexControllerTest {
         assertEquals("index", templateName);
         verify(recipeService, times(1)).listRecipes();
         verify(model, times(1)).addAttribute(eq("recipes"), argCaptor.capture());
-        List<Recipe> modelRecipes = argCaptor.getValue();
+        List<Recipe> modelRecipes = argCaptor.getValue().collectList().block();
         assertEquals(2, modelRecipes.size());
     }
 }

@@ -5,8 +5,7 @@ import guru.springframework.services.RecipeService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-
-import java.util.List;
+import reactor.core.publisher.Flux;
 
 /**
  * Created by jt on 6/1/17.
@@ -22,8 +21,8 @@ public class IndexController {
 
     @GetMapping({"", "/", "/index"})
     public String getIndexPage(Model model){
-        List<Recipe> o = recipeService.listRecipes().collectList().toProcessor().block();
-        model.addAttribute("recipes", o);
+        Flux<Recipe> recipeFlux = recipeService.listRecipes();
+        model.addAttribute("recipes", recipeFlux);
         return "index";
     }
 }
