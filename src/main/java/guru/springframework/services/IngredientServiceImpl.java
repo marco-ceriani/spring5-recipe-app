@@ -6,7 +6,6 @@ import guru.springframework.converters.IngredientToIngredientCommand;
 import guru.springframework.domain.Ingredient;
 import guru.springframework.domain.Recipe;
 import guru.springframework.domain.UnitOfMeasure;
-import guru.springframework.repositories.IngredientRepository;
 import guru.springframework.repositories.reactive.RecipeReactiveRepository;
 import guru.springframework.repositories.reactive.UnitOfMeasureReactiveRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +24,10 @@ public class IngredientServiceImpl implements IngredientService {
     private final IngredientCommandToIngredient inConverter;
     private final UnitOfMeasureReactiveRepository unitOfMeasureRepository;
 
-    public IngredientServiceImpl(RecipeReactiveRepository recipeRepository, IngredientToIngredientCommand outConverter, IngredientCommandToIngredient inConverter, UnitOfMeasureReactiveRepository unitOfMeasureRepository, IngredientRepository ingredientRepository) {
+    public IngredientServiceImpl(RecipeReactiveRepository recipeRepository,
+                                 IngredientToIngredientCommand outConverter,
+                                 IngredientCommandToIngredient inConverter,
+                                 UnitOfMeasureReactiveRepository unitOfMeasureRepository) {
         this.recipeRepository = recipeRepository;
         this.outConverter = outConverter;
         this.inConverter = inConverter;
@@ -53,6 +55,9 @@ public class IngredientServiceImpl implements IngredientService {
             log.error("recipe not found for id:{}", command.getRecipeId());
             return Mono.empty();
         }
+
+        unitOfMeasureRepository.findById(command.getUnitOfMeasure().getId())
+                .doOnNext(uom -> command.getUnitOfMeasure().setDescription(uom.getDescription())).toProcessor().block();
 
         addOrUpdateIngredient(recipe, command);
 
@@ -90,11 +95,13 @@ public class IngredientServiceImpl implements IngredientService {
     public Mono<Void> deleteById(String recipeId, String id) {
         log.info("deleting ingredient {} from recipe {}", id, recipeId);
         return recipeRepository.findById(recipeId)
-                .doOnNext(recipe -> recipe.getIngredients().removeIf(ingredient -> ingredient.getId().equals(id)))
-                .map(recipeRepository::save)
+                .map(recipe -> {
+                    recipe.getIngredients().removeIf(ingredient -> ingredient.getId().equals(id));
+                    return recipe;
+                })
+                .flatMap(recipeRepository::save)
                 .doOnError(error -> log.error("error deleting ingredient {} from recipe {}", id, recipeId, error))
                 .then();
-
     }
 
     private Optional<Ingredient> findIngredient(Recipe recipe, String id) {

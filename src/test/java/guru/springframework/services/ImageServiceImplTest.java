@@ -6,9 +6,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.buffer.DataBuffer;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static org.junit.Assert.assertEquals;
@@ -32,8 +33,6 @@ public class ImageServiceImplTest {
     public void saveImageFile() throws Exception {
         // given
         String id = "1";
-        MultipartFile multipartFile = new MockMultipartFile("imagefile", "testing.txt", "text/plain",
-                "This is a string in place of the image".getBytes());
 
         Recipe recipe = new Recipe();
         recipe.setId(id);
@@ -42,12 +41,14 @@ public class ImageServiceImplTest {
 
         ArgumentCaptor<Recipe> recipeCaptor = ArgumentCaptor.forClass(Recipe.class);
 
+        DataBuffer buffer = Mockito.mock(DataBuffer.class);
+        when(buffer.readableByteCount()).thenReturn(38);
         // when
-        imageService.saveImageFile(id, multipartFile).block();
+        imageService.saveImageFile(id, Flux.just(buffer)).block();
 
         // then
         verify(recipeRepository).save(recipeCaptor.capture());
         Recipe savedRecipe = recipeCaptor.getValue();
-        assertEquals(multipartFile.getBytes().length, savedRecipe.getImage().length);
+        assertEquals(38, savedRecipe.getImage().length);
     }
 }

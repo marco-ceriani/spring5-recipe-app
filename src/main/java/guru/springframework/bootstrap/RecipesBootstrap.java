@@ -1,32 +1,30 @@
 package guru.springframework.bootstrap;
 
 import guru.springframework.domain.*;
-import guru.springframework.repositories.CategoryRepository;
-import guru.springframework.repositories.RecipeRepository;
-import guru.springframework.repositories.UnitOfMeasureRepository;
+import guru.springframework.repositories.reactive.CategoryReactiveRepository;
+import guru.springframework.repositories.reactive.RecipeReactiveRepository;
+import guru.springframework.repositories.reactive.UnitOfMeasureReactiveRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Supplier;
+import java.util.*;
 
 @Component
 @Slf4j
 @Profile("default")
 public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEvent> {
 
-    private final RecipeRepository recipeRepository;
-    private final UnitOfMeasureRepository unitOfMeasureRepository;
-    private final CategoryRepository categoryRepository;
+    private final RecipeReactiveRepository recipeRepository;
+    private final UnitOfMeasureReactiveRepository unitOfMeasureRepository;
+    private final CategoryReactiveRepository categoryRepository;
 
-    public RecipesBootstrap(RecipeRepository recipeRepository, UnitOfMeasureRepository unitOfMeasureRepository, CategoryRepository categoryRepository) {
+    public RecipesBootstrap(RecipeReactiveRepository recipeRepository, UnitOfMeasureReactiveRepository unitOfMeasureRepository, CategoryReactiveRepository categoryRepository) {
         this.recipeRepository = recipeRepository;
         this.unitOfMeasureRepository = unitOfMeasureRepository;
         this.categoryRepository = categoryRepository;
@@ -36,76 +34,90 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         log.info("Loading boostrap data");
-        loadCategories();
-        loadUnitOfMeasures();
-        List<Recipe> recipes = getRecipes();
-        recipeRepository.saveAll(recipes);
+
+        recipeRepository.deleteAll()
+            .concatWith(unitOfMeasureRepository.deleteAll().and(categoryRepository.deleteAll()))
+            .then()
+            .block();
+
+        loadCategories()
+            .zipWith(loadUnitOfMeasures())
+            .block();
+        saveRecipes().then().block();
     }
 
-    private void loadCategories(){
+    private Mono<Void> loadCategories() {
+        List<Category> categories = new ArrayList<>();
         Category cat1 = new Category();
         cat1.setDescription("American");
-        categoryRepository.save(cat1);
+        categories.add(cat1);
 
         Category cat2 = new Category();
         cat2.setDescription("Italian");
         categoryRepository.save(cat2);
+        categories.add(cat2);
 
         Category cat3 = new Category();
         cat3.setDescription("Mexican");
-        categoryRepository.save(cat3);
+        categories.add(cat3);
 
         Category cat4 = new Category();
         cat4.setDescription("Fast Food");
-        categoryRepository.save(cat4);
+        categories.add(cat4);
 
         Category cat5 = new Category();
         cat5.setDescription("Japanese Food");
-        categoryRepository.save(cat5);
+        categories.add(cat5);
+
+        return categoryRepository.saveAll(categories).then();
     }
 
-    private void loadUnitOfMeasures() {
+    private Mono<Void> loadUnitOfMeasures() {
+        List<UnitOfMeasure> units = new ArrayList<>();
         UnitOfMeasure uom1 = new UnitOfMeasure();
         uom1.setDescription("Teaspoon");
-        unitOfMeasureRepository.save(uom1);
+        units.add(uom1);
 
         UnitOfMeasure uom2 = new UnitOfMeasure();
         uom2.setDescription("Tablespoon");
-        unitOfMeasureRepository.save(uom2);
+        units.add(uom2);
 
         UnitOfMeasure uom3 = new UnitOfMeasure();
         uom3.setDescription("Cup");
-        unitOfMeasureRepository.save(uom3);
+        units.add(uom3);
 
         UnitOfMeasure uom4 = new UnitOfMeasure();
         uom4.setDescription("Pinch");
-        unitOfMeasureRepository.save(uom4);
+        units.add(uom4);
 
         UnitOfMeasure uom5 = new UnitOfMeasure();
         uom5.setDescription("Ounce");
-        unitOfMeasureRepository.save(uom5);
+        units.add(uom5);
 
         UnitOfMeasure uom6 = new UnitOfMeasure();
         uom6.setDescription("Each");
-        unitOfMeasureRepository.save(uom6);
+        units.add(uom6);
 
         UnitOfMeasure uom7 = new UnitOfMeasure();
         uom7.setDescription("Pint");
-        unitOfMeasureRepository.save(uom7);
+        units.add(uom7);
 
         UnitOfMeasure uom8 = new UnitOfMeasure();
         uom8.setDescription("Dash");
-        unitOfMeasureRepository.save(uom8);
+        units.add(uom8);
+
+        return unitOfMeasureRepository.saveAll(units).then();
     }
 
-    private List<Recipe> getRecipes() {
-        List<Recipe> recipes = new ArrayList<>();
-        recipes.add(insertGuacamoleRecipe());
-        recipes.add(createRecipeTacos());
-        return recipes;
+    private Flux<Recipe> saveRecipes() {
+        return Flux.concat(insertGuacamoleRecipe(), createRecipeTacos())
+                .collectList()
+                .log()
+                .flatMapMany(recipeRepository::saveAll)
+                .doOnError(exc -> log.error("Error initializing recipes", exc));
     }
 
-    private Recipe insertGuacamoleRecipe() {
+    private Mono<Recipe> insertGuacamoleRecipe() {
         log.debug("creating recipe for perfect guacamole");
         Recipe recipe = new Recipe();
         recipe.setDescription("Perfect guacamole");
@@ -120,8 +132,8 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
                 "The simplest version of guacamole is just mashed avocados with salt. Don't let the lack of availability of other ingredients stop you from making guacamole.\n" +
                 "To extend a limited supply of avocados, add either sour cream or cottage cheese to your guacamole dip. Purists may be horrified, but so what? It tastes great.\n");
         Set<Category> categories = new HashSet<>();
-        categories.add(categoryRepository.findByDescription("American").get());
-        categories.add(categoryRepository.findByDescription("Mexican").get());
+        categories.add(categoryRepository.findByDescription("American").block());
+        categories.add(categoryRepository.findByDescription("Mexican").block());
         recipe.setCategories(categories);
 
         Notes guacNotes = new Notes();
@@ -134,17 +146,16 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
                 "Read more: http://www.simplyrecipes.com/recipes/perfect_recipe/#ixzz4jvoun5ws");
         recipe.setNotes(guacNotes);
 
-        Supplier<RuntimeException> uomExceptionSupplier = () -> new RuntimeException("Expected UOM Not Found");
+        return unitOfMeasureRepository.findAll()
+                .collectMap(uom -> uom.getDescription(), uom -> uom)
+                .map(units -> insertGuacamoleIngredients(recipe, units));
+    }
 
-        UnitOfMeasure tablespoonUom =
-                unitOfMeasureRepository.findByDescription("Tablespoon").orElseThrow(uomExceptionSupplier);
-        UnitOfMeasure teaspoonUom =
-                unitOfMeasureRepository.findByDescription("Teaspoon").orElseThrow(uomExceptionSupplier);
-        UnitOfMeasure dashUom =
-                unitOfMeasureRepository.findByDescription("Dash").orElseThrow(uomExceptionSupplier);
-        UnitOfMeasure numberUom =
-                unitOfMeasureRepository.findByDescription("Each").orElseThrow(uomExceptionSupplier);
-
+    private Recipe insertGuacamoleIngredients(Recipe recipe, Map<String, UnitOfMeasure> units) {
+        UnitOfMeasure tablespoonUom = units.get("Tablespoon");
+        UnitOfMeasure teaspoonUom = units.get("Teaspoon");
+        UnitOfMeasure dashUom = units.get("Dash");
+        UnitOfMeasure numberUom = units.get("Each");
         recipe.addIngredient(new Ingredient("ripe avocado", BigDecimal.valueOf(2), numberUom));
         recipe.addIngredient(new Ingredient("salt", BigDecimal.valueOf(0.25), teaspoonUom));
         recipe.addIngredient(new Ingredient("salt", BigDecimal.valueOf(0.25), teaspoonUom));
@@ -163,7 +174,7 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
         return recipe;
     }
 
-    private Recipe createRecipeTacos() {
+    private Mono<Recipe> createRecipeTacos() {
         log.debug("creating recipe for spicy tacos");
         Recipe recipe = new Recipe();
         recipe.setDescription("Spicy Grilled Chicken Taco");
@@ -180,10 +191,11 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
                 "4 Warm the tortillas: Place each tortilla on the grill or on a hot, dry skillet over medium-high heat. As soon as you see pockets of the air start to puff up in the tortilla, turn it with tongs and heat for a few seconds on the other side.\n" +
                 "Wrap warmed tortillas in a tea towel to keep them warm until serving.\n" +
                 "5 Assemble the tacos: Slice the chicken into strips. On each tortilla, place a small handful of arugula. Top with chicken slices, sliced avocado, radishes, tomatoes, and onion slices. Drizzle with the thinned sour cream. Serve with lime wedges.\n");
-        Set<Category> categories = new HashSet<>();
-        categories.add(categoryRepository.findByDescription("American").get());
-        categories.add(categoryRepository.findByDescription("Mexican").get());
-        recipe.setCategories(categories);
+        List<Category> categories = Flux.concat(
+                categoryRepository.findByDescription("American"),
+                categoryRepository.findByDescription("Mexican"))
+                .collectList().block();
+        recipe.setCategories(new HashSet<>(categories));
 
         Notes notes = new Notes();
         notes.setRecipeNotes("We have a family motto and it is this: Everything goes better in a tortilla.\n" +
@@ -193,19 +205,17 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
                 "Grill the chicken, then let it rest while you warm the tortillas. Now you are ready to assemble the tacos and dig in. The whole meal comes together in about 30 minutes!\n");
         recipe.setNotes(notes);
 
-        Supplier<RuntimeException> uomExceptionSupplier = () -> new RuntimeException("Expected UOM Not Found");
+        return unitOfMeasureRepository.findAll()
+                .collectMap(uom -> uom.getDescription(), uom -> uom)
+                .map(units -> addTacosIngredients(recipe, units));
+    }
 
-        UnitOfMeasure tablespoonUom =
-                unitOfMeasureRepository.findByDescription("Tablespoon").orElseThrow(uomExceptionSupplier);
-        UnitOfMeasure teaspoonUom =
-                unitOfMeasureRepository.findByDescription("Teaspoon").orElseThrow(uomExceptionSupplier);
-        UnitOfMeasure cupsUom =
-                unitOfMeasureRepository.findByDescription("Cup").orElseThrow(uomExceptionSupplier);
-        UnitOfMeasure pintUom =
-                unitOfMeasureRepository.findByDescription("Pint").orElseThrow(uomExceptionSupplier);
-        UnitOfMeasure numberUom =
-                unitOfMeasureRepository.findByDescription("Each").orElseThrow(uomExceptionSupplier);
-
+    private Recipe addTacosIngredients(Recipe recipe, Map<String, UnitOfMeasure> units) {
+        UnitOfMeasure tablespoonUom = units.get("Tablespoon");
+        UnitOfMeasure teaspoonUom = units.get("Teaspoon");
+        UnitOfMeasure cupsUom = units.get("Cup");
+        UnitOfMeasure pintUom = units.get("Pint");
+        UnitOfMeasure numberUom = units.get("Each");
         recipe.addIngredient(new Ingredient("Ancho Chili Powder", new BigDecimal(2), tablespoonUom));
         recipe.addIngredient(new Ingredient("Dried Oregano", new BigDecimal(1), teaspoonUom));
         recipe.addIngredient(new Ingredient("Dried Cumin", new BigDecimal(1), teaspoonUom));
@@ -225,7 +235,6 @@ public class RecipesBootstrap implements ApplicationListener<ContextRefreshedEve
         recipe.addIngredient(new Ingredient("Roughly chopped cilantro", new BigDecimal(4), numberUom));
         recipe.addIngredient(new Ingredient("cup sour cream thinned with 1/4 cup milk", new BigDecimal(4), cupsUom));
         recipe.addIngredient(new Ingredient("lime, cut into wedges", new BigDecimal(4), numberUom));
-
         return recipe;
     }
 

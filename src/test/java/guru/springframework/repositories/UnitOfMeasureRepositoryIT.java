@@ -1,30 +1,31 @@
 package guru.springframework.repositories;
 
 import guru.springframework.bootstrap.RecipesBootstrap;
-import guru.springframework.domain.UnitOfMeasure;
+import guru.springframework.repositories.reactive.CategoryReactiveRepository;
+import guru.springframework.repositories.reactive.RecipeReactiveRepository;
+import guru.springframework.repositories.reactive.UnitOfMeasureReactiveRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import reactor.test.StepVerifier;
 
-import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 @RunWith(SpringRunner.class)
 @DataMongoTest
 public class UnitOfMeasureRepositoryIT {
 
     @Autowired
-    UnitOfMeasureRepository repository;
+    UnitOfMeasureReactiveRepository repository;
 
     @Autowired
-    private RecipeRepository recipeRepository;
+    private RecipeReactiveRepository recipeRepository;
     @Autowired
-    private CategoryRepository categoryRepository;
+    private CategoryReactiveRepository categoryRepository;
 
     @Before
     public void setUp() {
@@ -38,16 +39,13 @@ public class UnitOfMeasureRepositoryIT {
 
     @Test
     public void findByDecriptionTeaspoon() {
-
-        Optional<UnitOfMeasure> unitOfMeasure = repository.findByDescription("Teaspoon");
-        assertTrue(unitOfMeasure.isPresent());
-        assertEquals("Teaspoon", unitOfMeasure.get().getDescription());
+        StepVerifier.create(repository.findByDescription("Teaspoon"))
+                .assertNext(uom -> assertThat(uom.getDescription(), is("Teaspoon")));
     }
 
     @Test
     public void findByDecriptionCup() {
-        Optional<UnitOfMeasure> unitOfMeasure = repository.findByDescription("Cup");
-        assertTrue(unitOfMeasure.isPresent());
-        assertEquals("Cup", unitOfMeasure.get().getDescription());
+        StepVerifier.create(repository.findByDescription("Cup"))
+                .assertNext(uom -> assertThat(uom.getDescription(), is("Cup")));
     }
 }

@@ -9,7 +9,11 @@ import guru.springframework.services.UnitOfMeasureService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Controller
@@ -29,7 +33,7 @@ public class IngredientController {
     public String listIngredients(@PathVariable String recipeId, Model model) {
         log.debug("Getting ingredient list for recipe {}", recipeId);
 
-        model.addAttribute("recipe", recipeService.findCommandById(recipeId).toProcessor().block());
+        model.addAttribute("recipe", recipeService.findCommandById(recipeId));
 
         return "recipe/ingredient/list";
     }
@@ -40,7 +44,7 @@ public class IngredientController {
                                   Model model) {
         log.debug("Getting ingredient list for recipe {}", recipeId);
 
-        model.addAttribute("ingredient", ingredientService.findByRecipeIdAndIngredientId(recipeId, id).toProcessor().block());
+        model.addAttribute("ingredient", ingredientService.findByRecipeIdAndIngredientId(recipeId, id));
 
         return "recipe/ingredient/show";
     }
@@ -54,7 +58,7 @@ public class IngredientController {
         ingredientCommand.setUnitOfMeasure(new UnitOfMeasureCommand());
         model.addAttribute("ingredient", ingredientCommand);
 
-        model.addAttribute("uomList", unitOfMeasureService.listAllUoms().collectList().toProcessor().block());
+        model.addAttribute("uomList", unitOfMeasureService.listAllUoms());
 
         return "recipe/ingredient/ingredientform";
     }
@@ -63,25 +67,25 @@ public class IngredientController {
     public String updateRecipeIngredient(@PathVariable String recipeId,
                                          @PathVariable String id,
                                          Model model) {
-        model.addAttribute("ingredient", ingredientService.findByRecipeIdAndIngredientId(recipeId, id).toProcessor().block());
-        model.addAttribute("uomList", unitOfMeasureService.listAllUoms().collectList().toProcessor().block());
+        model.addAttribute("ingredient", ingredientService.findByRecipeIdAndIngredientId(recipeId, id));
+        model.addAttribute("uomList", unitOfMeasureService.listAllUoms().collectList());
 
         return "recipe/ingredient/ingredientform";
     }
 
     @PostMapping(value = "/recipe/{recipeId}/ingredient")
-    public String saveOrUpdate(@ModelAttribute IngredientCommand command) {
-        IngredientCommand savedCommand = ingredientService.saveIngredient(command).toProcessor().block();
-        log.debug("saved recipe id:{} and ingredient id:{}", command.getRecipeId(), command.getId());
-
-        return "redirect:/recipe/" + savedCommand.getRecipeId() + "/ingredient/" + savedCommand.getId() + "/show";
+    public Mono<String> saveOrUpdate(@ModelAttribute IngredientCommand command, @PathVariable String recipeId) {
+        command.setRecipeId(recipeId);
+        return ingredientService.saveIngredient(command)
+                .doOnNext(sc -> log.debug("saved recipe id:{} and ingredient id:{}", command.getRecipeId(),
+                        command.getId()))
+                .map(sc -> "redirect:/recipe/" + sc.getRecipeId() + "/ingredient/" + sc.getId() + "/show");
     }
 
     @GetMapping(value = "/recipe/{recipeId}/ingredient/{id}/delete")
-    public String deleteIngredient(@PathVariable String recipeId, @PathVariable String id) {
+    public Mono<String> deleteIngredient(@PathVariable String recipeId, @PathVariable String id) {
         log.debug("removing ingredient {} from recipe id:{}", id, recipeId);
-        ingredientService.deleteById(recipeId, id).toProcessor().block();
-
-        return "redirect:/recipe/" + recipeId + "/ingredients";
+        return ingredientService.deleteById(recipeId, id).toProcessor()
+            .thenReturn("redirect:/recipe/" + recipeId + "/ingredients");
     }
 }

@@ -3,13 +3,13 @@ package guru.springframework.controllers;
 import guru.springframework.commands.RecipeCommand;
 import guru.springframework.services.ImageService;
 import guru.springframework.services.RecipeService;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.RequestPart;
 
 @Controller
 public class ImageController {
@@ -30,8 +30,10 @@ public class ImageController {
     }
 
     @PostMapping("/recipe/{id}/image")
-    public String handleImageUpload(@PathVariable String id, @RequestParam("imagefile") MultipartFile file) {
-        imageService.saveImageFile(id, file).toProcessor().block();
+    public String handleImageUpload(@PathVariable String id, @RequestPart("imagefile") FilePart file) {
+        imageService.saveImageFile(id, file.content())
+                .toProcessor()
+                .block();
         return "redirect:/recipe/" + id + "/show";
     }
 

@@ -4,7 +4,7 @@ import guru.springframework.commands.RecipeCommand;
 import guru.springframework.converters.RecipeCommandToRecipe;
 import guru.springframework.converters.RecipeToRecipeCommand;
 import guru.springframework.domain.Recipe;
-import guru.springframework.repositories.RecipeRepository;
+import guru.springframework.repositories.reactive.RecipeReactiveRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +22,7 @@ public class RecipeServiceIT {
     RecipeService recipeService;
 
     @Autowired
-    RecipeRepository recipeRepository;
+    RecipeReactiveRepository recipeRepository;
 
     @Autowired
     RecipeCommandToRecipe recipeCommandToRecipe;
@@ -37,8 +37,7 @@ public class RecipeServiceIT {
     @Test
     public void saveRecipeCommand() {
         // given
-        Iterable<Recipe> recipes = recipeRepository.findAll();
-        Recipe testRecipe = recipes.iterator().next();
+        Recipe testRecipe = recipeRepository.findAll().blockFirst();
         RecipeCommand testCommand = recipeToRecipeCommand.convert(testRecipe);
 
         // when

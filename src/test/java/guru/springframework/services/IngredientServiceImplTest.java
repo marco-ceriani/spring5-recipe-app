@@ -48,7 +48,7 @@ public class IngredientServiceImplTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        ingredientService = new IngredientServiceImpl(recipeRepository, ingredientToIngredientCommand, inConverter, unitOfMeasureRepository, ingredientRepository);
+        ingredientService = new IngredientServiceImpl(recipeRepository, ingredientToIngredientCommand, inConverter, unitOfMeasureRepository);
     }
 
     @Test
@@ -85,9 +85,17 @@ public class IngredientServiceImplTest {
         String recipeId = "2";
         String ingredientId = "3";
 
+        UnitOfMeasure uom = new UnitOfMeasure();
+        uom.setId("135421");
+        uom.setDescription("Gallon");
+        when(unitOfMeasureRepository.findById(uom.getId())).thenReturn(Mono.just(uom));
+
         IngredientCommand command = new IngredientCommand();
         command.setId(ingredientId);
         command.setRecipeId(recipeId);
+        UnitOfMeasureCommand uomc = new UnitOfMeasureCommand();
+        uomc.setId(uom.getId());
+        command.setUnitOfMeasure(uomc);
 
         Recipe savedRecipe = new Recipe();
         Ingredient ingredient = new Ingredient();
