@@ -31,6 +31,11 @@
             <!--/*@thymesVar id="ingredient" type="guru.springframework.commands.IngredientCommand"*/-->
             <form th:object="${ingredient}" th:action="@{'/recipe/' + ${ingredient.getRecipeId()} + '/ingredient'}"
                   method="post">
+
+                <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                    <p>Please Correct Errors Below</p>
+                </div>
+
                 <input type="hidden" th:field="*{id}"/>
                 <div class="pannel-group">
                     <div class="panel panel-primary">
@@ -41,14 +46,28 @@
 
 
                             <div class="row">
-                                <div class="col-md-3 form-group">
+                                <div class="col-md-3 form-group"
+                                    th:class="'col-md-3 form-group' + ${#fields.hasErrors('description') ? ' has-error' : ''}">
                                     <label>Description:</label>
                                     <input type="text" class="form-control" th:field="*{description}"/>
+                                    <span class="help-block" th:if="${#fields.hasErrors('description')}">
+                                        <ul>
+                                            <li th:each="err : ${#fields.errors('description')}"
+                                                th:text="${err}">Error</li>
+                                        </ul>
+                                    </span>
                                 </div>
 
-                                <div class="col-md-3 form-group">
+                                <div class="col-md-3 form-group"
+                                     th:class="'col-md-3 form-group' + ${#fields.hasErrors('amount') ? ' has-error' : ''}">
                                     <label>Amount:</label>
                                     <input type="number" class="form-control" th:field="*{amount}" min="0"/>
+                                    <span class="help-block" th:if="${#fields.hasErrors('amount')}">
+                                        <ul>
+                                            <li th:each="err : ${#fields.errors('amount')}"
+                                                th:text="${err}">Error</li>
+                                        </ul>
+                                    </span>
                                 </div>
 
                                 <div class="col-md-3 form-group">
