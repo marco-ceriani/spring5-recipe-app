@@ -1,7 +1,6 @@
 package guru.springframework.controllers;
 
 import guru.springframework.commands.IngredientCommand;
-import guru.springframework.commands.RecipeCommand;
 import guru.springframework.commands.UnitOfMeasureCommand;
 import guru.springframework.services.IngredientService;
 import guru.springframework.services.RecipeService;
@@ -51,12 +50,14 @@ public class IngredientController {
 
     @GetMapping(value = "/recipe/{recipeId}/ingredient/new")
     public String newIngredient(@PathVariable String recipeId, Model model) {
-        RecipeCommand recipeCommand = recipeService.findCommandById(recipeId).toProcessor().block();
-
-        IngredientCommand ingredientCommand = new IngredientCommand();
-        ingredientCommand.setRecipeId(recipeCommand.getId());
-        ingredientCommand.setUnitOfMeasure(new UnitOfMeasureCommand());
-        model.addAttribute("ingredient", ingredientCommand);
+        Mono<IngredientCommand> ingredient = recipeService.findCommandById(recipeId)
+                .map(recipeCommand -> {
+                    IngredientCommand ingredientCommand = new IngredientCommand();
+                    ingredientCommand.setRecipeId(recipeCommand.getId());
+                    ingredientCommand.setUnitOfMeasure(new UnitOfMeasureCommand());
+                    return ingredientCommand;
+                });
+        model.addAttribute("ingredient", ingredient);
 
         model.addAttribute("uomList", unitOfMeasureService.listAllUoms());
 

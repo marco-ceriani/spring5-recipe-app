@@ -48,20 +48,11 @@ public class RecipeController {
 
     @PostMapping("/recipe")
     public Mono<String> saveOrUpdate(@Valid @ModelAttribute("recipe") Mono<RecipeCommand> command) {
-//        if (bindingResult.hasErrors()) {
-//            bindingResult.getAllErrors().forEach(objectError -> {
-//                log.debug(objectError.toString());
-//            });
-//            return Mono.just(RECIPE_RECIPEFORM);
-//        }
-
-        Mono<String> savedCommand = command
+        return command
                 .flatMap(recipeService::saveRecipeCommand)
                 .map(recipe -> "redirect:/recipe/" + recipe.getId() + "/show")
                 .doOnError(thr -> log.error("Error saving recipe"))
                 .onErrorResume(WebExchangeBindException.class, thr -> Mono.just(RECIPE_RECIPEFORM));
-
-        return savedCommand;
     }
 
     @GetMapping("/recipe/{id}/delete")

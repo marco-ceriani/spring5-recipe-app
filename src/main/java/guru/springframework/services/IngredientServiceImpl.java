@@ -50,11 +50,10 @@ public class IngredientServiceImpl implements IngredientService {
     @Override
     @Transactional
     public Mono<IngredientCommand> saveIngredient(IngredientCommand command) {
-        Recipe recipe = recipeRepository.findById(command.getRecipeId()).toProcessor().block();
-        if (recipe == null) {
-            log.error("recipe not found for id:{}", command.getRecipeId());
-            return Mono.empty();
-        }
+        Recipe recipe = recipeRepository.findById(command.getRecipeId())
+                .switchIfEmpty(Mono.error(new RuntimeException("Recipe not found: " + command.getRecipeId())))
+                .doOnError(thr -> log.error("error saving ingredient {}", command, thr))
+                .toProcessor().block();
 
         unitOfMeasureRepository.findById(command.getUnitOfMeasure().getId())
                 .doOnNext(uom -> command.getUnitOfMeasure().setDescription(uom.getDescription())).toProcessor().block();
