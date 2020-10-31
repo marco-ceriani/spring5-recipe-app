@@ -35,7 +35,7 @@ public class RecipeServiceImpl implements RecipeService {
     @Override
     public Mono<Recipe> findById(String id) {
         return recipeRepository.findById(id)
-                .doOnError(thr -> log.warn("Recipe Not Found. ID value: " + id));
+                .doOnError(thr -> log.warn("Error reading Recipe. ID value: {}", id, thr));
     }
 
     @Override

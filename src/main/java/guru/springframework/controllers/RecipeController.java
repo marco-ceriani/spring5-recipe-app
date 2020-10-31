@@ -1,15 +1,12 @@
 package guru.springframework.controllers;
 
 import guru.springframework.commands.RecipeCommand;
-import guru.springframework.domain.Recipe;
+import guru.springframework.exceptions.NotFoundException;
 import guru.springframework.services.RecipeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import reactor.core.publisher.Mono;
 
@@ -27,10 +24,11 @@ public class RecipeController {
     }
 
     @GetMapping("/recipe/{id}/show")
-    public String showById(@PathVariable String id, Model model){
-        Mono<Recipe> recipe = recipeService.findById(id);
-        model.addAttribute("recipe", recipe);
-        return "recipe/show";
+    public Mono<String> showById(@PathVariable String id, Model model){
+        return recipeService.findById(id)
+                .doOnNext(recipe -> model.addAttribute("recipe", recipe))
+                .map(rec -> "recipe/show")
+                .switchIfEmpty(Mono.error(new NotFoundException("recipe not found: " + id)));
     }
 
     @GetMapping("/recipe/new")
@@ -62,15 +60,11 @@ public class RecipeController {
                 .thenReturn("redirect:/");
     }
 
-    // TODO: replace this
-//    @ExceptionHandler(NotFoundException.class)
-//    public ModelAndView handleNotFound(Exception exc) {
-//        log.error("Handling not found exception", exc);
-//        ModelAndView modelAndView = new ModelAndView();
-//        modelAndView.setStatus(HttpStatus.NOT_FOUND);
-//        modelAndView.setViewName("error404");
-//        modelAndView.addObject("exception", exc);
-//        return modelAndView;
-//    }
+    @ExceptionHandler(NotFoundException.class)
+    public String handleNotFound(Exception exc, Model model) {
+        log.error("Handling not found exception {}", exc.getMessage());
+        model.addAttribute("exception", exc);
+        return "error404";
+    }
 
 }
