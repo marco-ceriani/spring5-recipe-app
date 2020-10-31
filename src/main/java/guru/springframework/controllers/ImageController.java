@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
-
 @Controller
 @Slf4j
 public class ImageController {
@@ -48,17 +46,15 @@ public class ImageController {
     }
 
     @GetMapping(value = "/recipe/{id}/recipeimage")
-    public Mono<ResponseEntity<byte[]>> getRecipeImage(@PathVariable String id) throws IOException {
+    public Mono<ResponseEntity<byte[]>> getRecipeImage(@PathVariable String id) {
         return recipeService.findCommandById(id)
                 .flatMap(recipe -> Mono.justOrEmpty(recipe.getImage()))
                 .map(image -> {
                     HttpHeaders headers = new HttpHeaders();
                     headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
                     headers.setContentLength(image.length);
-                    return new ResponseEntity<byte[]>(image, headers, HttpStatus.OK);
+                    return new ResponseEntity<>(image, headers, HttpStatus.OK);
                 })
-                .switchIfEmpty(Mono.defer(() -> {
-                    return Mono.just(new ResponseEntity<byte[]>(null, null, HttpStatus.NOT_FOUND));
-                }));
+                .switchIfEmpty(Mono.defer(() -> Mono.just(new ResponseEntity<>(null, null, HttpStatus.NOT_FOUND))));
     }
 }

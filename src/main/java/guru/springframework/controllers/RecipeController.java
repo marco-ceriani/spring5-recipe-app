@@ -54,7 +54,7 @@ public class RecipeController {
     }
 
     @GetMapping("/recipe/{id}/delete")
-    public Mono<String> deleteRecipe(@PathVariable String id, Model model){
+    public Mono<String> deleteRecipe(@PathVariable String id){
         log.debug("Deleting recipe {}", id);
         return recipeService.deleteById(id)
                 .thenReturn("redirect:/");
