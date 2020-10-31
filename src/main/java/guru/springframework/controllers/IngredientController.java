@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.support.WebExchangeBindException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
@@ -63,8 +64,6 @@ public class IngredientController {
                 });
         model.addAttribute("ingredient", ingredient);
 
-        model.addAttribute("uomList", unitOfMeasureService.listAllUoms());
-
         return INGREDIENTFORM;
     }
 
@@ -73,7 +72,6 @@ public class IngredientController {
                                          @PathVariable String id,
                                          Model model) {
         model.addAttribute("ingredient", ingredientService.findByRecipeIdAndIngredientId(recipeId, id));
-        model.addAttribute("uomList", unitOfMeasureService.listAllUoms().collectList());
 
         return INGREDIENTFORM;
     }
@@ -87,7 +85,6 @@ public class IngredientController {
                         sc.getId()))
                 .map(sc -> "redirect:/recipe/" + sc.getRecipeId() + "/ingredient/" + sc.getId() + "/show")
                 .onErrorResume(WebExchangeBindException.class, thr -> {
-                    model.addAttribute("uomList", unitOfMeasureService.listAllUoms());
                     ((IngredientCommand)model.getAttribute("ingredient")).setRecipeId(recipeId);
                     return Mono.just(INGREDIENTFORM);
                 })
@@ -99,5 +96,10 @@ public class IngredientController {
         log.debug("removing ingredient {} from recipe id:{}", id, recipeId);
         return ingredientService.deleteById(recipeId, id).toProcessor()
             .thenReturn("redirect:/recipe/" + recipeId + "/ingredients");
+    }
+
+    @ModelAttribute("uomList")
+    public Flux<UnitOfMeasureCommand> populateUomList() {
+        return unitOfMeasureService.listAllUoms();
     }
 }
