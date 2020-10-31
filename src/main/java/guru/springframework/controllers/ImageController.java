@@ -3,6 +3,11 @@ package guru.springframework.controllers;
 import guru.springframework.commands.RecipeCommand;
 import guru.springframework.services.ImageService;
 import guru.springframework.services.RecipeService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,8 +15,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
+import reactor.core.publisher.Mono;
+
+import java.io.IOException;
 
 @Controller
+@Slf4j
 public class ImageController {
 
     private final ImageService imageService;
@@ -31,21 +40,25 @@ public class ImageController {
 
     @PostMapping("/recipe/{id}/image")
     public String handleImageUpload(@PathVariable String id, @RequestPart("imagefile") FilePart file) {
+        log.info("handling file upload {}", file.filename());
         imageService.saveImageFile(id, file.content())
                 .toProcessor()
                 .block();
         return "redirect:/recipe/" + id + "/show";
     }
 
-    // TODO: replace this
-//    @GetMapping("/recipe/{id}/recipeimage")
-//    public void getRecipeImage(@PathVariable String id, HttpServletResponse response) throws IOException {
-//        RecipeCommand recipe = recipeService.findCommandById(id).toProcessor().block();
-//
-//        response.setContentType(MediaType.IMAGE_JPEG_VALUE);
-//        if (recipe.getImage() != null) {
-//            InputStream is = new ByteArrayInputStream((recipe.getImage()));
-//            IOUtils.copy(is, response.getOutputStream());
-//        }
-//    }
+    @GetMapping(value = "/recipe/{id}/recipeimage")
+    public Mono<ResponseEntity<byte[]>> getRecipeImage(@PathVariable String id) throws IOException {
+        return recipeService.findCommandById(id)
+                .flatMap(recipe -> Mono.justOrEmpty(recipe.getImage()))
+                .map(image -> {
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+                    headers.setContentLength(image.length);
+                    return new ResponseEntity<byte[]>(image, headers, HttpStatus.OK);
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    return Mono.just(new ResponseEntity<byte[]>(null, null, HttpStatus.NOT_FOUND));
+                }));
+    }
 }
