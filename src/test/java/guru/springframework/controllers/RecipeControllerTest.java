@@ -3,7 +3,6 @@ package guru.springframework.controllers;
 import guru.springframework.commands.RecipeCommand;
 import guru.springframework.domain.Notes;
 import guru.springframework.domain.Recipe;
-import guru.springframework.exceptions.NotFoundException;
 import guru.springframework.services.RecipeService;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +20,8 @@ import reactor.core.publisher.Mono;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @WebFluxTest(controllers = RecipeController.class)
@@ -69,7 +69,7 @@ public class RecipeControllerTest {
         Recipe recipe = new Recipe();
         recipe.setId("1");
 
-        when(recipeService.findById(anyString())).thenReturn(Mono.error(new NotFoundException()));
+        when(recipeService.findById(anyString())).thenReturn(Mono.empty());
 
         webTestClient.get().uri("/recipe/1/show")
                 .exchange()

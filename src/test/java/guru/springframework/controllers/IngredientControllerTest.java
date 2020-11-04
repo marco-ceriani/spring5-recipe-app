@@ -159,9 +159,11 @@ public class IngredientControllerTest {
     public void testSaveOrUpdate() throws Exception {
 
         // given
+        String ingredientId = "5123123123";
+        String description = "Sugar";
         IngredientCommand ingredientCommand = new IngredientCommand();
-        ingredientCommand.setDescription("Sugar");
-        ingredientCommand.setId("5123123123");
+        ingredientCommand.setDescription(description);
+        ingredientCommand.setId(ingredientId);
         ingredientCommand.setRecipeId("12");
         when(ingredientService.saveIngredient(any(IngredientCommand.class))).thenReturn(Mono.just(ingredientCommand));
 
@@ -170,8 +172,10 @@ public class IngredientControllerTest {
                 .uri("/recipe/12/ingredient")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters
-                        .fromFormData("id", "5123123123")
-                        .with("description", "Sugar"))
+                        .fromFormData("id", ingredientId)
+                        .with("description", description)
+                        .with("amount", "2")
+                        .with("unitOfMeasure.id", "5fa2eb39e80c2c5def8da99f"))
                 .exchange()
                 .expectStatus().is3xxRedirection()
                 .expectHeader()

@@ -6,11 +6,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
@@ -39,16 +41,16 @@ public class ImageServiceImplTest {
         when(recipeRepository.findById(id)).thenReturn(Mono.just(recipe));
         when(recipeRepository.save(recipe)).thenReturn(Mono.empty());
 
-        ArgumentCaptor<Recipe> recipeCaptor = ArgumentCaptor.forClass(Recipe.class);
-
-        DataBuffer buffer = Mockito.mock(DataBuffer.class);
-        when(buffer.readableByteCount()).thenReturn(38);
+        byte[] bytes = "Some test bytes".getBytes(StandardCharsets.UTF_8);
+        DataBuffer buffer = new DefaultDataBufferFactory().allocateBuffer();
+        buffer.write(bytes);
         // when
         imageService.saveImageFile(id, Flux.just(buffer)).block();
 
         // then
+        ArgumentCaptor<Recipe> recipeCaptor = ArgumentCaptor.forClass(Recipe.class);
         verify(recipeRepository).save(recipeCaptor.capture());
         Recipe savedRecipe = recipeCaptor.getValue();
-        assertEquals(38, savedRecipe.getImage().length);
+        assertEquals(bytes.length, savedRecipe.getImage().length);
     }
 }
