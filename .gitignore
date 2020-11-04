@@ -5,6 +5,8 @@
 /src/test/javascript/coverage/
 /src/test/javascript/PhantomJS*/
 
+guru_database_create.sql
+
 ######################
 # Node
 ######################
