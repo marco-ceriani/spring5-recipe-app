@@ -31,18 +31,16 @@ public class ImageController {
 
     @GetMapping("/recipe/{id}/image")
     public String showUploadForm(@PathVariable String id, Model model) {
-        RecipeCommand recipe = recipeService.findCommandById(id).toProcessor().block();
+        Mono<RecipeCommand> recipe = recipeService.findCommandById(id);
         model.addAttribute("recipe", recipe);
         return "recipe/imageuploadform";
     }
 
     @PostMapping("/recipe/{id}/image")
-    public String handleImageUpload(@PathVariable String id, @RequestPart("imagefile") FilePart file) {
+    public Mono<String> handleImageUpload(@PathVariable String id, @RequestPart("imagefile") FilePart file) {
         log.info("handling file upload {}", file.filename());
-        imageService.saveImageFile(id, file.content())
-                .toProcessor()
-                .block();
-        return "redirect:/recipe/" + id + "/show";
+        return imageService.saveImageFile(id, file.content())
+                .thenReturn("redirect:/recipe/" + id + "/show");
     }
 
     @GetMapping(value = "/recipe/{id}/recipeimage")
